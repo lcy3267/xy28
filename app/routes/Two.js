@@ -14,7 +14,7 @@ import {
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 
-const One = connect(({ count }) => ({ count }))((props) => {
+const Two = connect(({ count }) => ({ count }))((props) => {
     const { dispatch, count } = props;
     return (
         <View style={styles.container}>
@@ -47,5 +47,5 @@ const mapStateToProps = ({ count }) => {
     return { count };
 };
 
-export default connect(mapStateToProps)(One);
+export default connect(mapStateToProps)(Two);
 
