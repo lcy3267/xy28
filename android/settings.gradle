@@ -1,0 +1,3 @@
+rootProject.name = 'xy28App'
+
+include ':app'
