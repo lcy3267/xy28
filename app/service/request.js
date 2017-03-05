@@ -109,7 +109,6 @@ export function remove(uri, headers = {}) {
 }
 
 export function sendRequest(uri,method,params){
-	//console.log("发起请求:"+uri);
 	switch (method){
 		case 'get':return get(uri,params);
 		case 'post':return post(uri,params);
