@@ -6,10 +6,9 @@
 
 import React, { Component } from 'react';
 import {
-  AppRegistry,
+    AppRegistry,
 } from 'react-native';
 
+import Index from './app/Index';
 
-import Home from './app/Home';
-
-AppRegistry.registerComponent('xy28App', () => Home);
+AppRegistry.registerComponent('xy28App', () => Index);
