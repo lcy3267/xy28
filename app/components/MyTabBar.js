@@ -29,7 +29,7 @@ const MyTableBar = React.createClass({
           <Icon
               name={tab}
               size={25}
-              color={this.props.activeTab === i ? 'rgb(116,116,116)' : 'rgb(221,221,221)'}
+              color={this.props.activeTab === i ? '#C3B267' : '#494748'}
               ref={(icon) => { tab[i] = icon; }}
           />
           {this.props.hasNewMassage&&i==3?
@@ -40,7 +40,7 @@ const MyTableBar = React.createClass({
               <OcIcon style={{position: 'absolute',left: 54,top:2}} name="primitive-dot" color="red" size={12}/>
               :null
           }
-          <Text style={styles.iconTile}>{this.props.tabBarItems[i].title}</Text>
+          <Text style={[styles.iconTile,{color:this.props.activeTab === i ? '#C3B267' : '#494748'}]}>{this.props.tabBarItems[i].title}</Text>
         </TouchableOpacity>;
       })}
     </View>;
@@ -52,11 +52,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 5,
-    backgroundColor: 'white',
-    paddingTop: 5,
-    borderTopColor: '#d8dde6',
-    borderTopWidth: 1
+    backgroundColor: 'black',
   },
   tabs: {
     height: 50,

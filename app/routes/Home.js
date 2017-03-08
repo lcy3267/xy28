@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, Platform } from 'react-native';
 import { TabBar } from 'antd-mobile';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import MyTabBar from '../components/MyTabBar';
 import One from './One';
+import Common from '../common/index';
 
 const tabBarItems = [
     {title: '首页', icon: 'md-home', component: One},
@@ -36,20 +37,25 @@ export default class BasicTabBarExample extends React.Component <any, any> {
     render() {
         return (
             <View style={styles.container}>
+                <StatusBar barStyle="light-content"
+                />
                 <ScrollableTabView
                     style={styles.main}
                     initialPage={0}
                     renderTabBar={() => <MyTabBar tabBarItems={tabBarItems} hasTimelineMassage={false}  hasNewMassage={true}/>}
                     tabBarPosition="bottom"
                     onChangeTab={this.onChangeTab.bind(this)}
-                    locked={true}
+                    locked={false}
                 >
                     {
                         tabBarItems.map((controller, i) => {
                             let Component = controller.component;
                             return (
                                 <View key={i} tabLabel={controller.icon}>
-                                    <Component />
+                                    <View style={styles.title}>
+                                        <Text style={styles.titleText}>标题</Text>
+                                    </View>
+                                    <Component height={{height:Common.window.height - 50}}/>
                                 </View>
                             )
                         })
@@ -61,20 +67,23 @@ export default class BasicTabBarExample extends React.Component <any, any> {
 
 }
 
-const Common = {
-    window: {
-        width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height,
-    }
-}
-
 const styles = StyleSheet.create({
     container: {
         width: Common.window.width,
-        height: Platform.OS == 'ios'?Common.window.height:Common.window.height-30
+        height: Platform.OS == 'ios'?Common.window.height:Common.window.height
     },
     main: {
+    },
+    title: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: Common.window.width,
+        height: Platform.OS == 'ios'?60:50,
         paddingTop: Platform.OS == 'ios'?20:0,
-        backgroundColor:'white'
-    }
+        backgroundColor: 'black'
+    },
+    titleText: {
+        fontSize: 18,
+        color: 'white'
+    },
 });

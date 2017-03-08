@@ -4,16 +4,19 @@
 
 import React, { Component } from 'react';
 import {
-    Dimensions,
-    Platform,
     StyleSheet,
     Text,
     View,
     Button,
     TouchableHighlight,
+    Image,
+    ScrollView,
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
+import { Carousel, WhiteSpace, WingBlank } from 'antd-mobile';
+import Common from '../common/index';
+
 
 
 class One extends Component{
@@ -27,34 +30,102 @@ class One extends Component{
     render(){
         const {count,dispatch} = this.props;
         return (
-            <View style={[styles.container,{height: 400}]}>
-                <Text style={styles.welcome}>
-                    Count: { count }
-                </Text>
-                <TouchableHighlight onPress={() => { dispatch({ type: 'count/add' }) }}>
-                    <Text>Add</Text>
-                </TouchableHighlight>
-                <TouchableHighlight onPress={() => { dispatch({ type: 'count/addDelay' }) }}>
-                    <Text>Delay Add111111</Text>
-                </TouchableHighlight>
-                <TouchableHighlight onPress={() => {Actions.two()}}>
-                    <Text>跳转</Text>
-                </TouchableHighlight>
-            </View>
+            <Image source={require('../asset/bg.png')} style={styles.container}>
+                <ScrollView>
+                    <View style={styles.carousel}>
+                        <Carousel
+                            className="my-carousel" autoplay={false} infinite
+                            beforeChange={(from, to) => console.log(`slide from ${from} to ${to}`)}
+                            afterChange={index => console.log('slide to', index)}
+                        >
+                            {[require('../asset/one.jpg'),require('../asset/two.jpg'),require('../asset/th.jpg')].map(ii => (
+                                <TouchableHighlight key={ii}>
+                                    <Image style={styles.actImage} source={ii} />
+                                </TouchableHighlight>
+                            ))}
+                        </Carousel>
+                    </View>
+                    <View style={styles.news}>
+                        <View style={styles.newsLeft}>
+                            <Text style={styles.newsText}>斤斤计较军军</Text>
+                        </View>
+                        <View style={styles.newsRight}>
+                            <Text style={styles.newsText}>22斤斤计较军军</Text>
+                        </View>
+                    </View>
+                    <View style={styles.bottom}>
+                        <View style={[styles.card,{paddingRight:7.5}]}>
+                            <Image style={styles.cardImg} source={require('../asset/family1.png')} />
+                        </View>
+                        <View style={[styles.card,{paddingLeft:7.5}]}>
+                            <Image style={styles.cardImg} source={require('../asset/family2.png')} />
+                        </View>
+                    </View>
+                </ScrollView>
+            </Image>
         )
     }
 }
 
+const pageHeight = Common.window.height-100;
+
 const styles = StyleSheet.create({
     container: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F5FCFF',
+        width: Common.window.width,
+        height: pageHeight
     },
+    actImage: {
+        width: Common.window.width,
+        height: pageHeight*1.6/6,
+    },
+    news:{
+        marginTop: 10,
+        width: Common.window.width,
+        height: pageHeight*1.1/6-10,
+        flexDirection: 'row',
+        backgroundColor:'transparent',
+        borderWidth: 4,
+        borderColor: '#EED650',
+        borderRadius: pageHeight*1.1/6/2,
+    },
+    newsLeft: {
+        flex: 2,
+        borderWidth: 4,
+        borderColor: '#EED650',
+        borderTopRightRadius: pageHeight*1.1/6/2,
+        borderBottomRightRadius: pageHeight*1.1/6/2,
+        borderLeftWidth: 0,
+        borderTopWidth: 0,
+        borderBottomWidth: 0,
+    },
+    newsRight: {
+        flex: 6,
+    },
+    newsText: {
+        color: 'white',
+        padding: 20
+    },
+    bottom: {
+        width: Common.window.width,
+        height: pageHeight*3.3/6,
+        flexDirection: 'row'
+    },
+    card: {
+        flex: 1,
+        padding: 15,
+        paddingBottom: 15,
+        height: pageHeight*3.3/6-15,
+    },
+    cardImg: {
+        width: '100%',height: '100%',
+        borderRadius: 5,
+        borderWidth: 4,
+        borderColor: '#A39054'
+    }
 });
 
-const mapStateToProps = ({ count }) => {
-    return { count };
+const mapStateToProps = () => {
+    return {};
 };
 
 export default connect(mapStateToProps)(One);
