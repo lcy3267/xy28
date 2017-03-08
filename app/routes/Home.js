@@ -53,7 +53,7 @@ export default class BasicTabBarExample extends React.Component <any, any> {
                             return (
                                 <View key={i} tabLabel={controller.icon}>
                                     <View style={styles.title}>
-                                        <Text style={styles.titleText}>标题</Text>
+                                        <Text style={styles.titleText}>游戏大厅</Text>
                                     </View>
                                     <Component height={{height:Common.window.height - 50}}/>
                                 </View>

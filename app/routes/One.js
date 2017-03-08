@@ -11,6 +11,7 @@ import {
     TouchableHighlight,
     Image,
     ScrollView,
+    TouchableOpacity
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
@@ -34,7 +35,7 @@ class One extends Component{
                 <ScrollView>
                     <View style={styles.carousel}>
                         <Carousel
-                            className="my-carousel" autoplay={false} infinite
+                            className="my-carousel" autoplay={true} infinite
                             beforeChange={(from, to) => console.log(`slide from ${from} to ${to}`)}
                             afterChange={index => console.log('slide to', index)}
                         >
@@ -54,12 +55,16 @@ class One extends Component{
                         </View>
                     </View>
                     <View style={styles.bottom}>
-                        <View style={[styles.card,{paddingRight:7.5}]}>
-                            <Image style={styles.cardImg} source={require('../asset/family1.png')} />
-                        </View>
-                        <View style={[styles.card,{paddingLeft:7.5}]}>
-                            <Image style={styles.cardImg} source={require('../asset/family2.png')} />
-                        </View>
+                        <TouchableOpacity activeOpacity={0.8} style={[styles.card,{paddingRight:7.5}]}>
+                            <Image style={styles.cardImg} source={require('../asset/family1.png')} >
+                                <Text style={styles.gameText}>北京游戏大厅</Text>
+                            </Image>
+                        </TouchableOpacity>
+                        <TouchableOpacity activeOpacity={0.8} style={[styles.card,{paddingLeft:7.5}]}>
+                            <Image style={styles.cardImg} source={require('../asset/family2.png')} >
+                                <Text style={styles.gameText}>加拿大游戏大厅</Text>
+                            </Image>
+                        </TouchableOpacity>
                     </View>
                 </ScrollView>
             </Image>
@@ -120,8 +125,17 @@ const styles = StyleSheet.create({
         width: '100%',height: '100%',
         borderRadius: 5,
         borderWidth: 4,
-        borderColor: '#A39054'
-    }
+        borderColor: '#A39054',
+        alignItems: 'center',
+
+        //justifyContent: 'center'
+    },
+    gameText: {
+        marginTop: 20,
+        backgroundColor:'transparent',
+        color: 'white',
+        fontSize: 18,
+    },
 });
 
 const mapStateToProps = () => {
