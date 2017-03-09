@@ -20,7 +20,7 @@ import Common from '../common/index';
 
 
 
-class One extends Component{
+class Index extends Component{
     // 构造
     constructor(props) {
       super(props);
@@ -142,5 +142,5 @@ const mapStateToProps = () => {
     return {};
 };
 
-export default connect(mapStateToProps)(One);
+export default connect(mapStateToProps)(Index);
 
