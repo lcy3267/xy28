@@ -15,10 +15,8 @@ import {
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
-import { Carousel, WhiteSpace, WingBlank } from 'antd-mobile';
+import { Carousel, WhiteSpace, WingBlank, NoticeBar } from 'antd-mobile';
 import Common from '../common/index';
-
-
 
 class Index extends Component{
     // 构造
@@ -31,7 +29,7 @@ class Index extends Component{
     render(){
         const {count,dispatch} = this.props;
         return (
-            <Image source={require('../asset/bg.png')} style={styles.container}>
+            <Image source={require('../asset/bg2.png')} style={styles.container}>
                 <ScrollView>
                     <View style={styles.carousel}>
                         <Carousel
@@ -50,17 +48,25 @@ class Index extends Component{
                         <View style={styles.newsLeft}>
                             <Text style={styles.newsText}>斤斤计较军军</Text>
                         </View>
-                        <View style={styles.newsRight}>
-                            <Text style={styles.newsText}>22斤斤计较军军</Text>
+                        <View style={[styles.newsRight,{padding: 10}]}>
+                            <View><Text style={{color: '#EED650',fontSize: 12}}>最新公告:</Text></View>
+                            <View style={{height: 35,overflow: 'hidden'}}>
+                                <Text  style={{color: 'white', lineHeight: 35, fontSize: 16}}
+                                >国庆期间余额宝收益和转出到账时间通知：由于国庆到来，余额宝收益到账将延迟，特此通知</Text>
+                            </View>
                         </View>
                     </View>
                     <View style={styles.bottom}>
-                        <TouchableOpacity activeOpacity={0.8} style={[styles.card,{paddingRight:7.5}]}>
+                        <TouchableOpacity
+                            onPress={()=>{Actions.roomList()}}
+                            activeOpacity={0.8} style={[styles.card,{paddingRight:7.5}]}>
                             <Image style={styles.cardImg} source={require('../asset/family1.png')} >
                                 <Text style={styles.gameText}>北京游戏大厅</Text>
                             </Image>
                         </TouchableOpacity>
-                        <TouchableOpacity activeOpacity={0.8} style={[styles.card,{paddingLeft:7.5}]}>
+                        <TouchableOpacity
+                            onPress={()=>{Actions.roomList()}}
+                            activeOpacity={0.8} style={[styles.card,{paddingLeft:7.5}]}>
                             <Image style={styles.cardImg} source={require('../asset/family2.png')} >
                                 <Text style={styles.gameText}>加拿大游戏大厅</Text>
                             </Image>
@@ -81,17 +87,17 @@ const styles = StyleSheet.create({
     },
     actImage: {
         width: Common.window.width,
-        height: pageHeight*1.6/6,
+        height: pageHeight*1.8/6,
     },
     news:{
         marginTop: 10,
         width: Common.window.width,
-        height: pageHeight*1.1/6-10,
+        height: pageHeight*1/6-10,
         flexDirection: 'row',
         backgroundColor:'transparent',
         borderWidth: 4,
         borderColor: '#EED650',
-        borderRadius: pageHeight*1.1/6/2,
+        borderRadius: pageHeight*1/6/2,
     },
     newsLeft: {
         flex: 2,
@@ -112,14 +118,14 @@ const styles = StyleSheet.create({
     },
     bottom: {
         width: Common.window.width,
-        height: pageHeight*3.3/6,
+        height: pageHeight*3.2/6,
         flexDirection: 'row'
     },
     card: {
         flex: 1,
         padding: 15,
         paddingBottom: 15,
-        height: pageHeight*3.3/6-15,
+        height: pageHeight*3.2/6-15,
     },
     cardImg: {
         width: '100%',height: '100%',

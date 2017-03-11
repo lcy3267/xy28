@@ -1,5 +1,5 @@
 import Config from '../config';
-import {toastShort} from '../common/ToastUtil'
+import { Toast } from 'antd-mobile';
 
 const apiDomain = Config.apiDomain;
 const timeout = 15000;
@@ -15,7 +15,7 @@ function filterStatus(res) {
 	if (res.ok) {
 		return res;
 	} else {
-		toastShort('系统出错');
+		Toast.info('系统出错');
 		throw new Error('server handle error');
 	}
 }
@@ -96,10 +96,11 @@ export function put(url,data){
 	return request(url,"PUT",headers,data);
 }
 
-export function post(uri, data = "", headers = {}) {
-	if(!headers["Content-type"]){
-		headers["Content-type"] = 'application/x-www-form-urlencoded';
-	}
+export function post(uri, data = "") {
+	let headers = {
+		'Accept': 'application/json',
+		'Content-Type': 'application/json'
+	};
 	return request(uri, "POST", headers, data);
 }
 
@@ -108,11 +109,15 @@ export function remove(uri, headers = {}) {
 	return request(uri, "DELETE", headers);
 }
 
-export function sendRequest(uri,method,params){
-	switch (method){
-		case 'get':return get(uri,params);
-		case 'post':return post(uri,params);
-		case 'put':return put(uri,params);
-		case 'delete':return remove(uri);
+export function sendRequest(uri,params){
+	var method = uri.split(" ")[0];
+	uri = uri.split(" ")[1];
+	let rs;
+	switch (method.toLowerCase()){
+		case 'get': rs = get(uri,params);break;
+		case 'post': rs = post(uri,params);break;
+		case 'put': rs = put(uri,params);break;
+		case 'delete': rs = remove(uri);break;
 	}
+	return rs;
 }

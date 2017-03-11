@@ -4,14 +4,16 @@ import { TabBar } from 'antd-mobile';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import MyTabBar from '../components/MyTabBar';
 import Index from './Index';
-import Two from './Two';
+import Recharge from './Recharge';
+import Message from './Message';
+import My from './My';
 import Common from '../common/index';
 
 const tabBarItems = [
-    {title: '首页', icon: 'md-home', component: Index},
-    {title: '充值', icon: 'logo-usd', component:Two},
-    {title: '动态', icon: 'ios-text', component: Index},
-    {title: '我的', icon: 'md-person', component: Two},
+    {title: '首页', icon: 'md-home', component: Index, headText: '游戏大厅'},
+    {title: '充值', icon: 'logo-usd', component:Recharge, headText: '充值'},
+    {title: '消息', icon: 'ios-text', component: Message, headText: '消息'},
+    {title: '我的', icon: 'md-person', component: My,headText: '我的'},
 ];
 
 //@todo 安卓icon兼容
@@ -24,6 +26,8 @@ export default class Home extends Component{
             selectedTab: 'redTab',
         };
     }
+
+    onChangeTab(){}
 
     render() {
         return (
@@ -43,7 +47,7 @@ export default class Home extends Component{
                             return (
                                 <View key={i} tabLabel={controller.icon}>
                                     <View style={styles.title}>
-                                        <Text style={styles.titleText}>游戏大厅</Text>
+                                        <Text style={styles.titleText}>{controller.headText?controller.headText: '游戏大厅'}</Text>
                                     </View>
                                     <Component height={{height:Common.window.height - 50}}/>
                                 </View>
@@ -68,9 +72,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: Common.window.width,
-        height: Platform.OS == 'ios'?60:50,
+        height: Platform.OS == 'ios'?64:54,
         paddingTop: Platform.OS == 'ios'?20:0,
-        backgroundColor: 'black'
+        backgroundColor: '#323139'
     },
     titleText: {
         fontSize: 18,
