@@ -42,6 +42,7 @@ class Register extends Component{
                     }
                     dispatch({type:'user/register',params,callback: ()=>{
                         Toast.info('注册成功');
+                        Actions.pop();
                     }})
                 }
             }else{
@@ -101,11 +102,12 @@ const styles = StyleSheet.create({
     container: {
         width: Common.window.width,
         height: pageHeight,
+        paddingTop: 64,
     },
     
 });
 
-const mapStateToProps = (user) => {
+const mapStateToProps = ({user}) => {
     return {user};
 };
 

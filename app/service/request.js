@@ -54,7 +54,7 @@ export function request(uri, type = "GET", headers = {}, data = ""){
 	}
 
 	if(__DEV__){
-		//console.debug("fetch data from uri:"+ uri);
+		console.debug("fetch data from uri:"+ uri);
 		//console.log("fetch data from uri:");
 		//console.log(uri);
 		//console.log("type");
@@ -109,7 +109,7 @@ export function remove(uri, headers = {}) {
 	return request(uri, "DELETE", headers);
 }
 
-export function sendRequest(uri,params){
+export function sendRequest(uri,params=null){
 	var method = uri.split(" ")[0];
 	uri = uri.split(" ")[1];
 	let rs;

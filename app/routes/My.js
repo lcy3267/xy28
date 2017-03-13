@@ -72,7 +72,7 @@ class My extends Component{
                         thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
                     >分享</Item>
                     <Item
-                        onClick={() => {}}
+                        onClick={Actions.register}
                         thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
                     >设置</Item>
                 </List>
