@@ -34,8 +34,6 @@ class Index extends Component{
                     <View style={styles.carousel}>
                         <Carousel
                             className="my-carousel" autoplay={true} infinite
-                            beforeChange={(from, to) => console.log(`slide from ${from} to ${to}`)}
-                            afterChange={index => console.log('slide to', index)}
                         >
                             {[require('../asset/one.jpg'),require('../asset/two.jpg'),require('../asset/th.jpg')].map(ii => (
                                 <TouchableHighlight key={ii}>

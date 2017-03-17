@@ -38,7 +38,7 @@ export default {
         *storageLogin({},{put}){
             let info = yield Storage.getItem(storageKey.userInfo);
             if(info){
-                put({type: 'bindUser', info});
+                yield put({type: 'bindUser', info});
             }
         },
         *login({params,callback},{put}){

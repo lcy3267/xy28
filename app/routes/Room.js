@@ -99,8 +99,8 @@ class Room extends Component{
     }
 
     showPourList(){
-        this.sendMessage();
-        return;
+        //this.sendMessage();
+        //return;
         let {rules} = this.props.gameRules;
         let firstRules = rules.filter((rule)=>rule.type != -1);
         const onMaskClose = () => {
