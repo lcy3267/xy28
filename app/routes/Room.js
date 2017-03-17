@@ -14,9 +14,10 @@ import {
     Platform,
     TextInput
 } from 'react-native';
+import SocketIOClient from "socket.io-client";
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
-import { Carousel, Button, Popup, Grid } from 'antd-mobile';
+import { Carousel, Button, Popup, Grid, Toast } from 'antd-mobile';
 import Common from '../common/index';
 import {formatDate} from '../common/FormatUtil';
 
@@ -30,6 +31,7 @@ class Room extends Component{
         this.firstDom = this.firstDom.bind(this);
         this.loadEnd = this.loadEnd.bind(this);
         this.showPourList = this.showPourList.bind(this);
+        this.sendMessage = this.sendMessage.bind(this);
 
         let messages = [];
 
@@ -49,9 +51,23 @@ class Room extends Component{
     }
 
     componentWillMount() {
+        let {user} = this.props;
+        if(!user.info){
+            Toast.info('请先进行登录');
+            Actions.pop();
+        }
         this.timer = setInterval(()=>{
             this.setState({second: this.getSecond()})
         },1000);
+        //链接房间
+
+        this.socket = SocketIOClient('http://localhost:3001', {jsonp: false});
+
+        this.socket.emit("login", {userid:123, username:'成员'});
+        // 接收消息
+        this.socket.on('login', function (data) {
+            console.log("收到消息:", data);
+        });
     }
 
     componentWillUnmount() {
@@ -76,31 +92,6 @@ class Room extends Component{
         return formatDate(new Date(),'s');
     }
 
-    firstDom(){
-        return (
-            <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
-                <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
-                    <Text style={{color: 'white', fontSize: 13}}>距离 811848 期截止</Text>
-                    <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>0分 {this.state.second}秒</Text>
-                </View>
-                <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
-                    <View style={{width: 1,height: '68%',backgroundColor: 'white'}} />
-                    <View style={{marginLeft: 40}}><Text style={{color: 'white'}}>哈哈哈哈哈哈</Text></View>
-                </View>
-            </View>
-        );
-    }
-
-    secondDom(){
-        return (
-            <View style={{height: 35,backgroundColor: 'white', alignItems: 'center',
-               paddingLeft: 12,borderBottomWidth: 1, borderBottomColor: '#DEDEDE',flexDirection: 'row'}}>
-                <Text>第  <Text style={styles.number}>811851</Text>  期</Text>
-                <Text style={[styles.number,{marginLeft: 20}]}>9+0+4=13(小,单)</Text>
-            </View>
-        );
-    }
-
     selectRule(i){
         this.setState({selectRule: i},()=>{
             this.showPourList();
@@ -108,6 +99,8 @@ class Room extends Component{
     }
 
     showPourList(){
+        this.sendMessage();
+        return;
         let {rules} = this.props.gameRules;
         let firstRules = rules.filter((rule)=>rule.type != -1);
         const onMaskClose = () => {
@@ -154,9 +147,11 @@ class Room extends Component{
                 </View>
                 <View style={[{flexDirection: 'row',height: 40,justifyContent: 'space-between',paddingHorizontal: 20}]}>
                     <Text style={{height: 30,textAlign: 'center',marginTop: 3}}>投注金额:</Text>
-                    <TextInput style={{width: '50%',backgroundColor: 'white',height: 30}}/>
+                    <TextInput
+                        onChangeText={(v)=>{this.setState({pourNumber:v})}}
+                        style={{width: '50%',backgroundColor: 'white',height: 30}}/>
                     <Button
-                        onClick={()=>{Popup.hide()}}
+                        onClick={this.bottomPour.bind(this)}
                         size="small" style={[styles.ruleButton,{backgroundColor: 'red',width: 60,borderWidth: 0}]}>
                         <Text style={{color: 'white'}}>投注</Text>
                     </Button>
@@ -166,8 +161,24 @@ class Room extends Component{
         Popup.show(dom,option);
     }
 
-    render(){
+    //下注
+    bottomPour(){
+        alert(this.state.pourNumber);
+        Popup.hide();
+        this.sendMessage();
+    }
 
+    //f发送消息
+    sendMessage(){
+        var obj = {
+            userid: 123,
+            username: '远',
+            content: '哈哈哈'
+        };
+        this.socket.emit('message', obj);
+    }
+
+    render(){
         return (
            <View style={styles.container}>
                {this.firstDom()}
@@ -201,6 +212,31 @@ class Room extends Component{
         )
     }
 
+    firstDom(){
+        return (
+            <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
+                <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
+                    <Text style={{color: 'white', fontSize: 13}}>距离 811848 期截止</Text>
+                    <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>0分 {this.state.second}秒</Text>
+                </View>
+                <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
+                    <View style={{width: 1,height: '68%',backgroundColor: 'white'}} />
+                    <View style={{marginLeft: 40}}><Text style={{color: 'white'}}>哈哈哈哈哈哈</Text></View>
+                </View>
+            </View>
+        );
+    }
+
+    secondDom(){
+        return (
+            <View style={{height: 35,backgroundColor: 'white', alignItems: 'center',
+               paddingLeft: 12,borderBottomWidth: 1, borderBottomColor: '#DEDEDE',flexDirection: 'row'}}>
+                <Text>第  <Text style={styles.number}>811851</Text>  期</Text>
+                <Text style={[styles.number,{marginLeft: 20}]}>9+0+4=13(小,单)</Text>
+            </View>
+        );
+    }
+
     _renderRow(data){
         if(!this._renderRow.index) this._renderRow.index = 0;
         this._renderRow.index++;
@@ -223,20 +259,27 @@ class Room extends Component{
     leftMassageView(data){
         return (
             <View style={styles.item}>
-                <TouchableOpacity
-                    onPress={()=>{
-                        //this._goToPersonCenter(data)
-                    }}
-                    style={styles.imageView}
-                >
-                    <Image style={styles.itemImage} source={require('../asset/th.jpg')}/>
-                </TouchableOpacity>
-                <View style={styles.itemContentView}>
-                    <View style={styles.grayAngle}>
-                        <Image style={styles.grayAngleImage} source={require('../asset/grayAngle.png')}/>
+                <View>
+                    <TouchableOpacity style={styles.imageView}>
+                        <Image style={styles.itemImage} source={require('../asset/th.jpg')}/>
+                    </TouchableOpacity>
+                </View>
+                <View style={{flexDirection: 'column',width: 220}}>
+                    <View style={{height: 15,paddingLeft: 0}}>
+                        <Text style={{fontSize: 12}}>12312</Text>
                     </View>
-                    <View style={[styles.itemContent,{left:-11}]}>
-                        <Text style={styles.itemContentText}>{data.content}</Text>
+                    <View style={{backgroundColor: '#F16B00',flexDirection: 'column',borderRadius: 5,padding: 8}}>
+                        <View style={{flexDirection: 'row'}}>
+                            <View style={{flex: 1}}>
+                                <Text style={{color: 'white'}}>812220期</Text>
+                            </View>
+                            <View style={{flex: 1}}>
+                                <Text style={{color: 'white'}}>投注类型: 小单</Text>
+                            </View>
+                        </View>
+                        <View style={{marginTop: 5}}>
+                            <Text style={{color: 'white'}}>金额: 1000元宝</Text>
+                        </View>
                     </View>
                 </View>
             </View>
@@ -296,10 +339,10 @@ const styles = StyleSheet.create({
         fontSize:15, color: '#6DB1EA', fontWeight: '500'
     },
     item:{
-        //height: 77,
         flexDirection: 'row',
-        paddingTop: 12,
-        paddingBottom: 12,
+        paddingTop: 8,
+        paddingBottom: 8,
+        width: '100%'
     },
     imageView: {
         justifyContent: 'flex-end',
@@ -332,8 +375,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     itemContentText: {
-        fontSize: 14,
-        color: '#333333',
+        fontSize: 12,
+        color: 'white',
     },
     massageContent: {
         flex: 1,
@@ -378,8 +421,8 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = ({gameRules}) => {
-    return {gameRules};
+const mapStateToProps = ({gameRules,user}) => {
+    return {gameRules,user};
 };
 
 export default connect(mapStateToProps)(Room);

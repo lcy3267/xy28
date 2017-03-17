@@ -4,7 +4,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Home from './routes/Home';
 import RoomList from './routes/RoomList';
 import Room from './routes/Room';
-import Register from './routes/Register';
+import Register from './routes/auth/Register';
+import PersonSet from './routes/person/PersonSet';
 
 const RouterComponent = () => {
   return (
@@ -13,6 +14,7 @@ const RouterComponent = () => {
         <Scene key="home" component={Home} initial={true} hideNavBar={true}/>
           {SetScene('roomList','北京28',RoomList)}
           {SetScene('register','注册',Register)}
+          {SetScene('personSet','设置',PersonSet)}
           {SetScene('room','初级房',Room,<Icon
               onPress={()=>alert("Right button")}
               name="md-add" color='white' size={25}/>,false)}

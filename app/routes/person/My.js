@@ -17,7 +17,7 @@ import {
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 import { List, Toast } from 'antd-mobile';
-import Common from '../common/index';
+import Common from '../../common/index';
 const Item = List.Item;
 
 class My extends Component{
@@ -28,14 +28,12 @@ class My extends Component{
         this.state = {};
     }
 
-    
-
     render(){
         return (
             <View style={styles.container}>
                 <View style={{flexDirection: 'row',padding: 10,backgroundColor: 'white',marginBottom: 20}}>
                     <View style={{flex: 1}}>
-                        <Image source={require('../asset/two.jpg')}
+                        <Image source={require('../../asset/two.jpg')}
                                style={{width: 68,height: 68}}
                         />
                     </View>
@@ -72,7 +70,7 @@ class My extends Component{
                         thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
                     >分享</Item>
                     <Item
-                        onClick={Actions.register}
+                        onClick={Actions.personSet}
                         thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
                     >设置</Item>
                 </List>

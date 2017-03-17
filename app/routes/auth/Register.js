@@ -14,7 +14,7 @@ import {
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 import { List, InputItem, WhiteSpace, Toast } from 'antd-mobile';
-import Common from '../common/index';
+import Common from '../../common/index';
 import { createForm } from 'rc-form';
 
 class Register extends Component{
@@ -27,8 +27,6 @@ class Register extends Component{
     }
 
     submit(){
-        console.log(this.props);
-
         const {form, dispatch} = this.props;
 
         form.validateFields((error, value) => {
@@ -96,13 +94,14 @@ class Register extends Component{
     }
 }
 
-const pageHeight = Common.window.height - 50;
+const pageHeight = Common.window.height;
 
 const styles = StyleSheet.create({
     container: {
         width: Common.window.width,
         height: pageHeight,
         paddingTop: 64,
+        backgroundColor: '#F5F5F9'
     },
     
 });

@@ -6,19 +6,21 @@ import MyTabBar from '../components/MyTabBar';
 import Index from './Index';
 import Recharge from './Recharge';
 import Message from './Message';
-import My from './My';
+import My from './person/My';
+import Register from './auth/Register';
+import Login from './auth/Login';
 import Common from '../common/index';
+import { connect } from 'dva/mobile';
 
 const tabBarItems = [
     {title: '首页', icon: 'md-home', component: Index, headText: '游戏大厅'},
-    {title: '充值', icon: 'logo-usd', component:Recharge, headText: '充值'},
+    {title: '充值', icon: 'logo-usd', component: Recharge, headText: '充值'},
     {title: '消息', icon: 'ios-text', component: Message, headText: '消息'},
     {title: '我的', icon: 'md-person', component: My,headText: '我的'},
 ];
 
 //@todo 安卓icon兼容
-
-export default class Home extends Component{
+class Home extends Component{
 
     constructor(props) {
         super(props);
@@ -30,6 +32,9 @@ export default class Home extends Component{
     onChangeTab(){}
 
     render() {
+
+        let {user} = this.props;
+
         return (
             <View style={styles.container}>
                 <StatusBar barStyle="light-content"/>
@@ -49,7 +54,10 @@ export default class Home extends Component{
                                     <View style={styles.title}>
                                         <Text style={styles.titleText}>{controller.headText?controller.headText: '游戏大厅'}</Text>
                                     </View>
-                                    <Component height={{height:Common.window.height - 50}}/>
+                                    {!user.info && i > 0?
+                                        <Login />:
+                                        <Component height={{height:Common.window.height - 50}}/>
+                                    }
                                 </View>
                             )
                         })
@@ -81,3 +89,9 @@ const styles = StyleSheet.create({
         color: 'white'
     },
 });
+
+const mapStateToProps = ({user}) => {
+    return {user};
+};
+
+export default connect(mapStateToProps)(Home);
