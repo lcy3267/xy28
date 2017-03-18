@@ -30,6 +30,7 @@ class Login extends Component{
         const {form, dispatch} = this.props;
 
         form.validateFields((error, value) => {
+            console.log(value)
             if(!error){
                 let params = {
                     account: value.account,
@@ -60,7 +61,6 @@ class Login extends Component{
                         })}
                         clear
                         placeholder="请输入账号"
-                        autoFocus
                     ><Text style={{fontSize: 14}}>账号</Text></InputItem>
                     <InputItem
                         {...getFieldProps('password',{
@@ -78,11 +78,10 @@ class Login extends Component{
                         </View>
                     </List.Item>
                 </List>
-                <View style={{height: 50,justifyContent: 'center'}}>
+                <View style={{height: 50,justifyContent: 'center',alignItems: 'flex-end',}}>
                     <Text
                         onPress={Actions.register}
-                        style={{textAlign: 'right',marginRight: 20,
-                    color:'#2F8BE9'}}>去注册</Text>
+                        style={{width: 80,color:'#2F8BE9'}}>去注册</Text>
                 </View>
 
             </View>

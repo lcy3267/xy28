@@ -7,7 +7,6 @@ import Index from './Index';
 import Recharge from './Recharge';
 import Message from './Message';
 import My from './person/My';
-import Register from './auth/Register';
 import Login from './auth/Login';
 import Common from '../common/index';
 import { connect } from 'dva/mobile';
@@ -34,6 +33,9 @@ class Home extends Component{
     render() {
 
         let {user} = this.props;
+
+        console.log('当前登录:');
+        console.log(user.info);
 
         return (
             <View style={styles.container}>

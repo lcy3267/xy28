@@ -19,7 +19,7 @@ export default {
 
     subscriptions: {
         setup({ dispatch }) {
-            dispatch({type: 'storageLogin'});
+            //dispatch({type: 'storage'});
         },
     },
 
@@ -28,20 +28,23 @@ export default {
             let rs = yield sendRequest(api.user.register,params);
             if(rs && rs.err_code == 0){
                 let info = {
-                    user_id: rs.user_id
+                    user: rs.user
                 }
                 Storage.setItem(storageKey.userInfo, info);
                 callback && callback(rs.user_id);
                 yield put({ type: 'bindUser' , info});
             }
         },
-        *storageLogin({},{put}){
-            let info = yield Storage.getItem(storageKey.userInfo);
-            if(info){
-                yield put({type: 'bindUser', info});
-            }
+        *storage({},{put}){
+            //let info = yield Storage.getItem(storageKey.userInfo);
+            //if(info){
+              //  yield put({type: 'bindUser', info});
+            //}
         },
         *login({params,callback},{put}){
+
+            console.log('>>>>>');
+            console.log(params)
             let rs = yield sendRequest(api.user.login,params);
             if(rs && rs.err_code == 0){
                 let info = rs.user;

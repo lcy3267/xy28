@@ -27,6 +27,7 @@ class Register extends Component{
     }
 
     submit(){
+        alert(123)
         const {form, dispatch} = this.props;
 
         form.validateFields((error, value) => {
@@ -63,7 +64,6 @@ class Register extends Component{
                         })}
                         clear
                         placeholder="请输入账号"
-                        autoFocus
                     ><Text style={{fontSize: 14}}>账号</Text></InputItem>
                     <InputItem
                         {...getFieldProps('password',{
@@ -89,6 +89,11 @@ class Register extends Component{
                         </View>
                     </List.Item>
                 </List>
+                <View style={{height: 50,justifyContent: 'center',alignItems: 'flex-end',}}>
+                    <Text
+                        onPress={Actions.pop}
+                        style={{width: 80,color:'#2F8BE9'}}>去登录</Text>
+                </View>
             </View>
         )
     }

@@ -16,7 +16,8 @@ export default {
 		declare: ''
 	},
 	commentTail: '',
-	apiDomain:'http://localhost:3000',
+	apiDomain:'http://192.168.0.113:3000',
+	socketDomain:'http://192.168.0.113:3001',
 };
 
 export const weixinAppId = 'wx9d8b9eb6f7a6c46a';

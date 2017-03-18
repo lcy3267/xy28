@@ -19,6 +19,7 @@ import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 import { Carousel, Button, Popup, Grid, Toast } from 'antd-mobile';
 import Common from '../common/index';
+import config from '../config';
 import {formatDate} from '../common/FormatUtil';
 
 const pageHeight = Common.window.height;
@@ -36,14 +37,14 @@ class Room extends Component{
         let messages = [];
 
         for (let i = 0; i < 13; i++){
-            messages.push(this.getData());
+            //messages.push(this.getData());
         }
 
         // 初始状态
         this.state = {
+            lottery: {}, //上期开奖
             second: this.getSecond(),
             messages: messages,
-            messagesLen: messages.length,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
             }),
@@ -55,18 +56,31 @@ class Room extends Component{
         if(!user.info){
             Toast.info('请先进行登录');
             Actions.pop();
+            return;
         }
-        this.timer = setInterval(()=>{
+        
+        /*this.timer = setInterval(()=>{
             this.setState({second: this.getSecond()})
-        },1000);
+        },1000);*/
         //链接房间
 
-        this.socket = SocketIOClient('http://localhost:3001', {jsonp: false});
+        this.socket = SocketIOClient(config.socketDomain, {jsonp: false});
 
-        this.socket.emit("login", {userid:123, username:'成员'});
-        // 接收消息
-        this.socket.on('login', function (data) {
-            console.log("收到消息:", data);
+        this.socket.emit("login", {user: user.info});
+        
+        //监听用户加入房间
+        this.socket.on('login', (data) => {
+            let {joinUser,onlineCount,lotteryRs} = data;
+            if(joinUser.user_id == user.info.user_id){
+                this.setState({lottery: lotteryRs,onlineCount});
+            }
+        });
+
+        // 监听下注信息
+        this.socket.on('bet', (bet) => {
+            let messages = this.state.messages;
+            messages.push(bet);
+            this.setState({messages});
         });
     }
 
@@ -80,14 +94,6 @@ class Room extends Component{
         this.refs.mylistView.scrollToEnd();
     }
 
-    getData(){
-        return {
-            avatar_picture_url: '',
-            user_id: 1,
-            content: '嘻嘻哈哈哈哈'
-        };
-    }
-
     getSecond(){
         return formatDate(new Date(),'s');
     }
@@ -99,8 +105,8 @@ class Room extends Component{
     }
 
     showPourList(){
-        //this.sendMessage();
-        //return;
+        this.sendMessage();
+        return;
         let {rules} = this.props.gameRules;
         let firstRules = rules.filter((rule)=>rule.type != -1);
         const onMaskClose = () => {
@@ -168,28 +174,36 @@ class Room extends Component{
         this.sendMessage();
     }
 
-    //f发送消息
+    //发送消息
     sendMessage(){
-        var obj = {
-            userid: 123,
-            username: '远',
-            content: '哈哈哈'
+        let {user} = this.props;
+        let lottery = this.state.lottery;
+        var bet = {
+            user: user.info,
+            type: 1,
+            money: 10,
+            number: null,
+            serial_number: lottery.serial_number+1
         };
-        this.socket.emit('message', obj);
+        this.socket.emit('bet', bet);
     }
 
     render(){
+        let lottery = this.state.lottery;
+        let messages = this.state.messages;
+        //this._renderRow.index = 0;
         return (
            <View style={styles.container}>
-               {this.firstDom()}
-               {this.secondDom()}
+               {this.firstDom(lottery)}
+               {this.secondDom(lottery)}
                <View style={{flex: 1}}>
-                   <ListView
+                   {messages.length>0?<ListView
                        ref='mylistView'
-                       dataSource={this.state.dataSource.cloneWithRows(this.state.messages)}
+                       dataSource={this.state.dataSource.cloneWithRows(messages)}
                        renderRow={this._renderRow.bind(this)}
                        style={{width: '100%',height: '100%'}}
-                   />
+                   />:null}
+
                </View>
                <View style={{height: 50,backgroundColor: '#E9E9E9',flexDirection: 'row'}}>
                    <View style={{width: 80,height: '100%', justifyContent: 'center',alignItems: 'center'}}>
@@ -202,9 +216,9 @@ class Room extends Component{
                    <View style={{flex: 1,height: '100%',justifyContent: 'center',
                                 alignItems: 'center',paddingLeft: 10,paddingRight: 10}}>
                        <TextInput
-                        style={{height: 35, backgroundColor: 'white', width: '100%'}}
-                        onChangeText={(text) => this.setState({text})}
-                        value={this.state.text}
+                            style={{height: 35, backgroundColor: 'white', width: '100%'}}
+                            onChangeText={(text) => this.setState({text})}
+                            value={this.state.text}
                         />
                    </View>
                </View>
@@ -212,11 +226,12 @@ class Room extends Component{
         )
     }
 
-    firstDom(){
+    firstDom(lottery){
+        console.log(lottery);
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
                 <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
-                    <Text style={{color: 'white', fontSize: 13}}>距离 811848 期截止</Text>
+                    <Text style={{color: 'white', fontSize: 13}}>距离 {lottery.serial_number+1} 期截止</Text>
                     <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>0分 {this.state.second}秒</Text>
                 </View>
                 <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
@@ -227,26 +242,36 @@ class Room extends Component{
         );
     }
 
-    secondDom(){
+    secondDom(lottery){
+        let result = `${lottery.one}+${lottery.two}+${lottery.third}=${lottery.sum}`;
+        let hasMax = '大';
+        let hasDouble = '单'
+        if(lottery.sum <= 13){
+            hasMax = '小'
+        }
+        if(lottery.sum % 2 == 0){
+            hasDouble = '双'
+        }
         return (
             <View style={{height: 35,backgroundColor: 'white', alignItems: 'center',
                paddingLeft: 12,borderBottomWidth: 1, borderBottomColor: '#DEDEDE',flexDirection: 'row'}}>
-                <Text>第  <Text style={styles.number}>811851</Text>  期</Text>
-                <Text style={[styles.number,{marginLeft: 20}]}>9+0+4=13(小,单)</Text>
+                <Text>第  <Text style={styles.number}>{lottery.serial_number}</Text>  期</Text>
+                <Text style={[styles.number,{marginLeft: 20}]}>{result}({`${hasMax},${hasDouble},${hasMax+hasDouble}`})</Text>
             </View>
         );
     }
 
-    _renderRow(data){
+    _renderRow(bet){
         if(!this._renderRow.index) this._renderRow.index = 0;
         this._renderRow.index++;
+        let {user} = this.props;
         return(
             <View onLayout={()=>{
                 if(this._renderRow.index > 8){
-                    this.loadEnd()
+                    this.loadEnd();
                 }
             }}>
-                {data.user_id == 0?this.rightMassageView(data):this.leftMassageView(data)}
+                {bet.user.user_id !== user.info.user_id?this.leftMassageView(bet):this.leftMassageView(bet)}
             </View>
         )
     }
@@ -256,7 +281,7 @@ class Room extends Component{
         return str[type-1];
     }
 
-    leftMassageView(data){
+    leftMassageView(bet){
         return (
             <View style={styles.item}>
                 <View>
@@ -266,19 +291,19 @@ class Room extends Component{
                 </View>
                 <View style={{flexDirection: 'column',width: 220}}>
                     <View style={{height: 15,paddingLeft: 0}}>
-                        <Text style={{fontSize: 12}}>12312</Text>
+                        <Text style={{fontSize: 12}}>{bet.user.name}</Text>
                     </View>
                     <View style={{backgroundColor: '#F16B00',flexDirection: 'column',borderRadius: 5,padding: 8}}>
                         <View style={{flexDirection: 'row'}}>
                             <View style={{flex: 1}}>
-                                <Text style={{color: 'white'}}>812220期</Text>
+                                <Text style={{color: 'white'}}>{bet.serial_number}期</Text>
                             </View>
                             <View style={{flex: 1}}>
-                                <Text style={{color: 'white'}}>投注类型: 小单</Text>
+                                <Text style={{color: 'white'}}>投注类型: {this.formatRule(bet.type)}</Text>
                             </View>
                         </View>
                         <View style={{marginTop: 5}}>
-                            <Text style={{color: 'white'}}>金额: 1000元宝</Text>
+                            <Text style={{color: 'white'}}>金额: {bet.money}元宝</Text>
                         </View>
                     </View>
                 </View>
