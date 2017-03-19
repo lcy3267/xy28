@@ -1,7 +1,6 @@
 /**
  * Created by chengyuan on 2017/3/5.
  */
-
 import React, { Component } from 'react';
 import {
     StyleSheet,
@@ -12,7 +11,8 @@ import {
     Image,
     ListView,
     Platform,
-    TextInput
+    TextInput,
+    KeyboardAvoidingView
 } from 'react-native';
 import SocketIOClient from "socket.io-client";
 import { Actions } from 'react-native-router-flux';
@@ -23,6 +23,10 @@ import config from '../config';
 import {formatDate} from '../common/FormatUtil';
 
 const pageHeight = Common.window.height;
+
+const showToastNoMask = (message) =>{
+    Toast.info(message, 2, null, false);
+}
 
 class Room extends Component{
     // 构造
@@ -54,7 +58,7 @@ class Room extends Component{
     componentWillMount() {
         let {user} = this.props;
         if(!user.info){
-            Toast.info('请先进行登录');
+            showToastNoMask('请先进行登录');
             Actions.pop();
             return;
         }
@@ -85,6 +89,7 @@ class Room extends Component{
     }
 
     componentWillUnmount() {
+        this.socket && this.socket.disconnect();
         // 如果存在this.timer，则使用clearTimeout清空。
         // 如果你使用多个timer，那么用多个变量，或者用个数组来保存引用，然后逐个clear
         this.timer && clearTimeout(this.timer);
@@ -98,17 +103,7 @@ class Room extends Component{
         return formatDate(new Date(),'s');
     }
 
-    selectRule(i){
-        this.setState({selectRule: i},()=>{
-            this.showPourList();
-        });
-    }
-
     showPourList(){
-        this.sendMessage();
-        return;
-        let {rules} = this.props.gameRules;
-        let firstRules = rules.filter((rule)=>rule.type != -1);
         const onMaskClose = () => {
         };
         let option = {
@@ -116,72 +111,25 @@ class Room extends Component{
             maskClosable: true,
             onMaskClose,
         };
-
-        let centerStyle = {alignItems: 'center',justifyContent: 'center'};
-
-        let dom = (
-            <View style={{backgroundColor: '#48B0FF'}}>
-                <View style={[{height: 50},centerStyle]}>
-                    <Text style={{color: 'white'}}>大小单双</Text>
-                </View>
-                <View style={{height: 100,flexDirection: 'row',flexWrap: 'wrap'}}>
-                    {firstRules.map((rule,i)=>{
-                        return (
-                            <View key={i} style={{width: '20%',height: 50,paddingHorizontal: 20}}>
-                                <TouchableOpacity
-                                    activeOpacity={1}
-                                    onPress={this.selectRule.bind(this,i)}
-                                    style={[i == this.state.selectRule ?
-                                        {borderWidth: 1,borderColor: 'white'} : null,centerStyle]}>
-                                    <Text style={{color: 'white'}}>{this.formatRule(rule.type)}</Text>
-                                    <Text style={{color: 'white'}}>1:{rule.rate}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        );
-                    })}
-                </View>
-                <View style={[{flexDirection: 'row', height: 40,justifyContent: 'space-between',paddingHorizontal: 20}]}>
-                    <Button size="small" type="ghost" style={{borderRadius: 4,height: 30,borderColor: 'white'}}>
-                        <Text style={{color: 'white',}}>赔率说明</Text>
-                    </Button>
-                    <Button size="small" style={[styles.ruleButton,{marginLeft: 90}]}>
-                        <Text style={{color: 'black'}}>最小投注</Text>
-                    </Button>
-                    <Button size="small" style={styles.ruleButton}>
-                        <Text style={{color: 'black'}}>双倍投注</Text>
-                    </Button>
-                </View>
-                <View style={[{flexDirection: 'row',height: 40,justifyContent: 'space-between',paddingHorizontal: 20}]}>
-                    <Text style={{height: 30,textAlign: 'center',marginTop: 3}}>投注金额:</Text>
-                    <TextInput
-                        onChangeText={(v)=>{this.setState({pourNumber:v})}}
-                        style={{width: '50%',backgroundColor: 'white',height: 30}}/>
-                    <Button
-                        onClick={this.bottomPour.bind(this)}
-                        size="small" style={[styles.ruleButton,{backgroundColor: 'red',width: 60,borderWidth: 0}]}>
-                        <Text style={{color: 'white'}}>投注</Text>
-                    </Button>
-                </View>
-            </View>
-        );
-        Popup.show(dom,option);
+        Popup.show(<PopupContent bottomPour={this.bottomPour.bind(this)} {...this.props}/>,option);
     }
 
     //下注
-    bottomPour(){
-        alert(this.state.pourNumber);
+    bottomPour(betType,betMoney){
+        if(!betType) return showToastNoMask('请选择下注类型');
+        if(!betMoney) return showToastNoMask('请输入下注金额');
+        this.sendMessage({betType,betMoney});
         Popup.hide();
-        this.sendMessage();
     }
 
     //发送消息
-    sendMessage(){
+    sendMessage({betType,betMoney}){
         let {user} = this.props;
         let lottery = this.state.lottery;
         var bet = {
             user: user.info,
-            type: 1,
-            money: 10,
+            type: betType,
+            money: betMoney,
             number: null,
             serial_number: lottery.serial_number+1
         };
@@ -191,43 +139,43 @@ class Room extends Component{
     render(){
         let lottery = this.state.lottery;
         let messages = this.state.messages;
-        //this._renderRow.index = 0;
         return (
            <View style={styles.container}>
                {this.firstDom(lottery)}
                {this.secondDom(lottery)}
-               <View style={{flex: 1}}>
-                   {messages.length>0?<ListView
-                       ref='mylistView'
-                       dataSource={this.state.dataSource.cloneWithRows(messages)}
-                       renderRow={this._renderRow.bind(this)}
-                       style={{width: '100%',height: '100%'}}
-                   />:null}
+               <KeyboardAvoidingView behavior="padding" style={{flex: 1,flexDirection:'column'}}>
+                   <View style={{flex: 1}}>
+                       {messages.length>0?<ListView
+                           ref='mylistView'
+                           dataSource={this.state.dataSource.cloneWithRows(messages)}
+                           renderRow={this._renderRow.bind(this)}
+                           style={{width: '100%',height: '100%'}}
+                       />:null}
 
-               </View>
-               <View style={{height: 50,backgroundColor: '#E9E9E9',flexDirection: 'row'}}>
-                   <View style={{width: 80,height: '100%', justifyContent: 'center',alignItems: 'center'}}>
-                       <Button
-                           onClick={this.showPourList}
-                           type="primary" style={{width: 62,height: 32,borderRadius: 4}}>
-                           <Text style={{fontSize: 14,width: '100%'}}>下注</Text>
-                       </Button>
                    </View>
-                   <View style={{flex: 1,height: '100%',justifyContent: 'center',
-                                alignItems: 'center',paddingLeft: 10,paddingRight: 10}}>
-                       <TextInput
-                            style={{height: 35, backgroundColor: 'white', width: '100%'}}
-                            onChangeText={(text) => this.setState({text})}
-                            value={this.state.text}
-                        />
+                   <View style={{height: 50,backgroundColor: '#E9E9E9',flexDirection: 'row'}}>
+                       <View style={{width: 80,height: '100%', justifyContent: 'center',alignItems: 'center'}}>
+                           <Button
+                               onClick={this.showPourList}
+                               type="primary" style={{width: 62,height: 32,borderRadius: 4}}>
+                               <Text style={{fontSize: 14,width: '100%'}}>下注</Text>
+                           </Button>
+                       </View>
+                       <View style={{flex: 1,height: '100%',justifyContent: 'center',
+                                    alignItems: 'center',paddingLeft: 10,paddingRight: 10}}>
+                           <TextInput
+                                style={{height: 35, backgroundColor: 'white', width: '100%'}}
+                                onChangeText={(text) => this.setState({text})}
+                                value={this.state.text}
+                            />
+                       </View>
                    </View>
-               </View>
+               </KeyboardAvoidingView>
            </View>
         )
     }
 
     firstDom(lottery){
-        console.log(lottery);
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
                 <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
@@ -256,18 +204,16 @@ class Room extends Component{
             <View style={{height: 35,backgroundColor: 'white', alignItems: 'center',
                paddingLeft: 12,borderBottomWidth: 1, borderBottomColor: '#DEDEDE',flexDirection: 'row'}}>
                 <Text>第  <Text style={styles.number}>{lottery.serial_number}</Text>  期</Text>
-                <Text style={[styles.number,{marginLeft: 20}]}>{result}({`${hasMax},${hasDouble},${hasMax+hasDouble}`})</Text>
+                <Text style={[styles.number,{marginLeft: 20}]}>{lottery.one?`${result}(${hasMax},${hasDouble},${hasMax+hasDouble})`:'加载中'}</Text>
             </View>
         );
     }
 
     _renderRow(bet){
-        if(!this._renderRow.index) this._renderRow.index = 0;
-        this._renderRow.index++;
         let {user} = this.props;
         return(
             <View onLayout={()=>{
-                if(this._renderRow.index > 8){
+                if(this.state.messages.length > 5){
                     this.loadEnd();
                 }
             }}>
@@ -276,10 +222,6 @@ class Room extends Component{
         )
     }
 
-    formatRule(type){
-        let str = ['大','小','单','双','大单','大双','小单','小双','极大','极小'];
-        return str[type-1];
-    }
 
     leftMassageView(bet){
         return (
@@ -299,7 +241,7 @@ class Room extends Component{
                                 <Text style={{color: 'white'}}>{bet.serial_number}期</Text>
                             </View>
                             <View style={{flex: 1}}>
-                                <Text style={{color: 'white'}}>投注类型: {this.formatRule(bet.type)}</Text>
+                                <Text style={{color: 'white'}}>投注类型: {formatRule(bet.type)}</Text>
                             </View>
                         </View>
                         <View style={{marginTop: 5}}>
@@ -336,6 +278,96 @@ class Room extends Component{
             </View>
         )
     }
+}
+
+class PopupContent extends Component {
+
+    // 构造
+    constructor(props) {
+        super(props);
+        this.moneyChange = this.moneyChange.bind(this);
+        // 初始状态
+        this.state = {};
+    }
+
+    bottomPour(){
+        this.props.bottomPour(this.state.betType,this.state.betMoney);
+    }
+
+    moneyChange(betMoney){
+        this.setState({betMoney});
+    }
+
+    updatePosition(hasPosition){
+        this.setState({hasPosition});
+    }
+
+    render() {
+        let {rules} = this.props.gameRules;
+
+        let firstRules = rules.filter((rule)=>rule.type != -1);
+
+        let centerStyle = {alignItems: 'center',justifyContent: 'center'};
+
+        return (
+            <View behavior='position:100' style={{backgroundColor: '#48B0FF',bottom:this.state.hasPosition?220:0}}>
+                <View style={[{height: 50},centerStyle]}>
+                    <Text style={{color: 'white'}}>大小单双</Text>
+                </View>
+                <View style={{height: 100,flexDirection: 'row',flexWrap: 'wrap'}}>
+                    {firstRules.map((rule,i)=>{
+                        return (
+                            <View key={i} style={{width: '20%',height: 50,paddingHorizontal: 20}}>
+                                <TouchableOpacity
+                                    activeOpacity={1}
+                                    onPress={()=>{this.setState({selectRule:i,betType:rule.type})}}
+                                    style={[i == this.state.selectRule ?
+                                        {borderWidth: 1,borderColor: 'white'} : null,centerStyle]}>
+                                    <Text style={{color: 'white'}}>{formatRule(rule.type)}</Text>
+                                    <Text style={{color: 'white'}}>1:{rule.rate}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    })}
+                </View>
+                <View style={[{flexDirection: 'row', height: 40,justifyContent: 'space-between',paddingHorizontal: 20}]}>
+                    <Button size="small" type="ghost" style={{borderRadius: 4,height: 30,borderColor: 'white'}}>
+                        <Text style={{color: 'white',}}>赔率说明</Text>
+                    </Button>
+                    <Button
+                        onClick={()=>{this.moneyChange(10+'')}}
+                        size="small" style={[styles.ruleButton,{marginLeft: 90}]}>
+                        <Text style={{color: 'black'}}>最小投注</Text>
+                    </Button>
+                    <Button
+                        onClick={()=>{this.moneyChange(this.state.betMoney*2+'')}}
+                        size="small" style={styles.ruleButton}>
+                        <Text style={{color: 'black'}}>双倍投注</Text>
+                    </Button>
+                </View>
+                <View style={[{flexDirection: 'row',height: 40,justifyContent: 'space-between',paddingHorizontal: 20}]}>
+                    <Text style={{height: 30,textAlign: 'center',marginTop: 3}}>投注金额:</Text>
+                    <TextInput
+                        onFocus={this.updatePosition.bind(this,true)}
+                        onBlur={this.updatePosition.bind(this,false)}
+                        keyboardType="numeric"
+                        value={this.state.betMoney}
+                        onChangeText={this.moneyChange}
+                        style={{width: '50%',backgroundColor: 'white',height: 30}}/>
+                    <Button
+                        onClick={this.bottomPour.bind(this)}
+                        size="small" style={[styles.ruleButton,{backgroundColor: 'red',width: 60,borderWidth: 0}]}>
+                        <Text style={{color: 'white'}}>投注</Text>
+                    </Button>
+                </View>
+            </View>
+        );
+    }
+}
+
+function formatRule(type){
+    let str = ['大','小','单','双','大单','大双','小单','小双','极大','极小'];
+    return str[type-1];
 }
 
 const styles = StyleSheet.create({

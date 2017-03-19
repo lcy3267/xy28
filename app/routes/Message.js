@@ -1,9 +1,6 @@
 /**
  * Created by chengyuan on 2017/3/11.
  */
-/**
- * Created by chengyuan on 2017/3/5.
- */
 
 import React, { Component } from 'react';
 import {

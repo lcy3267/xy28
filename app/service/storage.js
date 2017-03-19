@@ -1,6 +1,8 @@
-import React,{
+import React from 'react';
+import {
 	AsyncStorage
 } from 'react-native';
+
 
 export function setItem(key, value) {
 	if (key && value){

@@ -28,6 +28,9 @@ class Home extends Component{
         };
     }
 
+    componentWillMount() {
+    }
+
     onChangeTab(){}
 
     render() {
