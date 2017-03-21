@@ -47,7 +47,7 @@ class Room extends Component{
         // 初始状态
         this.state = {
             lottery: {}, //上期开奖
-            second: this.getSecond(),
+            times: this.getSecond(),
             messages: messages,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
@@ -56,27 +56,29 @@ class Room extends Component{
     }
 
     componentWillMount() {
-        let {user} = this.props;
+        let {user,roomId} = this.props;
         if(!user.info){
             showToastNoMask('请先进行登录');
             Actions.pop();
             return;
         }
-        
-        /*this.timer = setInterval(()=>{
-            this.setState({second: this.getSecond()})
-        },1000);*/
+
+        //获取开奖时间
+        this.timer = setInterval(()=>{
+            this.setState({times: this.getSecond()})
+        },500);
         //链接房间
 
         this.socket = SocketIOClient(config.socketDomain, {jsonp: false});
 
-        this.socket.emit("login", {user: user.info});
+        this.socket.emit("login", {user: user.info,roomId: roomId});
         
         //监听用户加入房间
         this.socket.on('login', (data) => {
-            let {joinUser,onlineCount,lotteryRs} = data;
+            let {joinUser,lotteryRs} = data;
             if(joinUser.user_id == user.info.user_id){
-                this.setState({lottery: lotteryRs,onlineCount});
+                console.log(lotteryRs)
+                this.setState({lottery: lotteryRs});
             }
         });
 
@@ -100,7 +102,19 @@ class Room extends Component{
     }
 
     getSecond(){
-        return formatDate(new Date(),'s');
+        var myDate = new Date();
+
+        let currentMinute = myDate.getMinutes(); //当前分钟数
+        let currentSecond = myDate.getSeconds(); // 当前秒数
+
+        let single = currentMinute%10; //个位分分钟数
+        let next = single >= 5?10:5;
+
+        let minute = next - single -1;
+        let second = 60 - currentSecond -1;
+
+
+        return {minute,second};
     }
 
     showPourList(){
@@ -176,11 +190,12 @@ class Room extends Component{
     }
 
     firstDom(lottery){
+        let times = this.state.times;
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
                 <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
                     <Text style={{color: 'white', fontSize: 13}}>距离 {lottery.serial_number+1} 期截止</Text>
-                    <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>0分 {this.state.second}秒</Text>
+                    <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>{times.minute} 分 {times.second}秒</Text>
                 </View>
                 <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
                     <View style={{width: 1,height: '68%',backgroundColor: 'white'}} />
@@ -191,9 +206,9 @@ class Room extends Component{
     }
 
     secondDom(lottery){
-        let result = `${lottery.one}+${lottery.two}+${lottery.third}=${lottery.sum}`;
+        let result = `${lottery.one} + ${lottery.two} + ${lottery.third} = ${lottery.sum} `;
         let hasMax = '大';
-        let hasDouble = '单'
+        let hasDouble = '单';
         if(lottery.sum <= 13){
             hasMax = '小'
         }
@@ -204,7 +219,7 @@ class Room extends Component{
             <View style={{height: 35,backgroundColor: 'white', alignItems: 'center',
                paddingLeft: 12,borderBottomWidth: 1, borderBottomColor: '#DEDEDE',flexDirection: 'row'}}>
                 <Text>第  <Text style={styles.number}>{lottery.serial_number}</Text>  期</Text>
-                <Text style={[styles.number,{marginLeft: 20}]}>{lottery.one?`${result}(${hasMax},${hasDouble},${hasMax+hasDouble})`:'加载中'}</Text>
+                <Text style={[styles.number,{marginLeft: 20}]}>{lottery.one || lottery.one == 0?`${result}(${hasMax},${hasDouble},${hasMax+hasDouble})`:'加载中'}</Text>
             </View>
         );
     }
@@ -310,7 +325,7 @@ class PopupContent extends Component {
         let centerStyle = {alignItems: 'center',justifyContent: 'center'};
 
         return (
-            <View behavior='position:100' style={{backgroundColor: '#48B0FF',bottom:this.state.hasPosition?220:0}}>
+            <View behavior='position:100' style={{backgroundColor: '#48B0FF',paddingBottom:this.state.hasPosition?220:0}}>
                 <View style={[{height: 50},centerStyle]}>
                     <Text style={{color: 'white'}}>大小单双</Text>
                 </View>

@@ -27,7 +27,6 @@ class Register extends Component{
     }
 
     submit(){
-        alert(123)
         const {form, dispatch} = this.props;
 
         form.validateFields((error, value) => {

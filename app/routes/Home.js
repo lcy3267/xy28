@@ -49,7 +49,7 @@ class Home extends Component{
                     renderTabBar={() => <MyTabBar tabBarItems={tabBarItems} hasTimelineMassage={false}  hasNewMassage={true}/>}
                     tabBarPosition="bottom"
                     onChangeTab={this.onChangeTab.bind(this)}
-                    locked={false}
+                    locked={true}
                 >
                     {
                         tabBarItems.map((controller, i) => {

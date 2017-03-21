@@ -27,9 +27,7 @@ export default {
         *register({params,callback}, { put }) {
             let rs = yield sendRequest(api.user.register,params);
             if(rs && rs.err_code == 0){
-                let info = {
-                    user: rs.user
-                }
+                let info = rs.user;
                 Storage.setItem(storageKey.userInfo, info);
                 callback && callback(rs.user_id);
                 yield put({ type: 'bindUser' , info});

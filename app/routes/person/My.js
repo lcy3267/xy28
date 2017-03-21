@@ -29,6 +29,9 @@ class My extends Component{
     }
 
     render(){
+
+        let {user} = this.props;
+
         return (
             <View style={styles.container}>
                 <View style={{flexDirection: 'row',padding: 10,backgroundColor: 'white',marginBottom: 20}}>
@@ -38,7 +41,7 @@ class My extends Component{
                         />
                     </View>
                     <View style={{flex: 3,justifyContent: 'center'}}>
-                        <Text>阿远</Text>
+                        <Text>{user.info.name}</Text>
                     </View>
                 </View>
                 <List>
@@ -89,7 +92,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const mapStateToProps = (user) => {
+const mapStateToProps = ({user}) => {
     return {user};
 };
 
