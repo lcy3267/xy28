@@ -20,7 +20,6 @@ import { connect } from 'dva/mobile';
 import { Carousel, Button, Popup, Grid, Toast } from 'antd-mobile';
 import Common from '../common/index';
 import config from '../config';
-import {formatDate} from '../common/FormatUtil';
 
 const pageHeight = Common.window.height;
 
@@ -62,13 +61,12 @@ class Room extends Component{
             Actions.pop();
             return;
         }
-
+        Toast.loading('加载中...',10);
         //获取开奖时间
         this.timer = setInterval(()=>{
             this.setState({times: this.getSecond()})
         },500);
         //链接房间
-
         this.socket = SocketIOClient(config.socketDomain, {jsonp: false});
 
         this.socket.emit("login", {user: user.info,roomId: roomId});
@@ -77,8 +75,9 @@ class Room extends Component{
         this.socket.on('login', (data) => {
             let {joinUser,lotteryRs} = data;
             if(joinUser.user_id == user.info.user_id){
-                console.log(lotteryRs)
-                this.setState({lottery: lotteryRs});
+                this.setState({lottery: lotteryRs},()=>{
+                    Toast.hide();
+                });
             }
         });
 
