@@ -46,6 +46,7 @@ class Room extends Component{
         // 初始状态
         this.state = {
             lottery: {}, //上期开奖
+            integral: 0,
             times: this.getSecond(),
             messages: messages,
             dataSource: new ListView.DataSource({
@@ -73,20 +74,30 @@ class Room extends Component{
         
         //监听用户加入房间
         this.socket.on('login', (data) => {
-            let {joinUser,lotteryRs} = data;
+            let {joinUser, lotteryRs, integral} = data;
             if(joinUser.user_id == user.info.user_id){
-                this.setState({lottery: lotteryRs},()=>{
+                let serial_number = lotteryRs.serial_number;
+                this.setState({lottery: lotteryRs, integral, serial_number},()=>{
                     Toast.hide();
                 });
             }
         });
 
         // 监听下注信息
-        this.socket.on('bet', (bet) => {
+        this.socket.on('bet', (result) => {
             let messages = this.state.messages;
-            messages.push(bet);
-            this.setState({messages});
+            messages.push(result.bet);
+            this.setState({messages,integral: result.integral});
         });
+
+        // 监听开奖结果
+        this.socket.on('openResult', (result) => {
+            console.log(result);
+            console.log("开奖了!!!!");
+            this.setState({integral: result.integral,serial_number: result.serial_number});
+        });
+
+
     }
 
     componentWillUnmount() {
@@ -144,7 +155,7 @@ class Room extends Component{
             type: betType,
             money: betMoney,
             number: null,
-            serial_number: lottery.serial_number+1
+            serial_number: this.state.serial_number+1
         };
         this.socket.emit('bet', bet);
     }
@@ -193,12 +204,12 @@ class Room extends Component{
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
                 <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
-                    <Text style={{color: 'white', fontSize: 13}}>距离 {lottery.serial_number+1} 期截止</Text>
+                    <Text style={{color: 'white', fontSize: 13}}>距离 {this.state.serial_number+1} 期截止</Text>
                     <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>{times.minute} 分 {times.second}秒</Text>
                 </View>
                 <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
                     <View style={{width: 1,height: '68%',backgroundColor: 'white'}} />
-                    <View style={{marginLeft: 40}}><Text style={{color: 'white'}}>哈哈哈哈哈哈</Text></View>
+                    <View style={{marginLeft: 40}}><Text style={{color: 'white'}}>{this.state.integral}</Text></View>
                 </View>
             </View>
         );

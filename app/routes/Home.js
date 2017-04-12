@@ -37,9 +37,6 @@ class Home extends Component{
 
         let {user} = this.props;
 
-        console.log('当前登录:');
-        console.log(user.info);
-
         return (
             <View style={styles.container}>
                 <StatusBar barStyle="light-content"/>
