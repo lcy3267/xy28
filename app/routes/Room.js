@@ -49,6 +49,7 @@ class Room extends Component{
             integral: 0,
             times: this.getSecond(),
             messages: messages,
+            opening: false,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
             }),
@@ -62,7 +63,7 @@ class Room extends Component{
             Actions.pop();
             return;
         }
-        Toast.loading('加载中...',10);
+        Toast.loading('加载中...');
         //获取开奖时间
         this.timer = setInterval(()=>{
             this.setState({times: this.getSecond()})
@@ -74,6 +75,7 @@ class Room extends Component{
         
         //监听用户加入房间
         this.socket.on('login', (data) => {
+            Toast.hide();
             let {joinUser, lotteryRs, integral} = data;
             if(joinUser.user_id == user.info.user_id){
                 let serial_number = lotteryRs.serial_number;
@@ -92,12 +94,13 @@ class Room extends Component{
 
         // 监听开奖结果
         this.socket.on('openResult', (result) => {
-            console.log(result);
-            console.log("开奖了!!!!");
-            this.setState({integral: result.integral,serial_number: result.serial_number});
+            this.setState({opening: result.opening});
+            if(result.serial_number){
+                console.log(result);
+                console.log("开奖了!!!!");
+                this.setState({integral: result.integral,serial_number: result.serial_number});
+            }
         });
-
-
     }
 
     componentWillUnmount() {
@@ -180,6 +183,7 @@ class Room extends Component{
                    <View style={{height: 50,backgroundColor: '#E9E9E9',flexDirection: 'row'}}>
                        <View style={{width: 80,height: '100%', justifyContent: 'center',alignItems: 'center'}}>
                            <Button
+                               disabled={this.state.opening}
                                onClick={this.showPourList}
                                type="primary" style={{width: 62,height: 32,borderRadius: 4}}>
                                <Text style={{fontSize: 14,width: '100%'}}>下注</Text>
