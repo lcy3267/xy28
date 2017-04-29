@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     Image
 } from 'react-native';
+import md5 from 'blueimp-md5';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 import { List, InputItem, WhiteSpace, Toast } from 'antd-mobile';
