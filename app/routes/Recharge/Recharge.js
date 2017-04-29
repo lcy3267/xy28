@@ -12,9 +12,9 @@ import {
     Image,
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
-import { connect } from 'dva/mobile';
+import { connect } from 'dva';
 import { List, Button } from 'antd-mobile';
-import Common from '../common/index';
+import Common from '../../common/index';
 const Item = List.Item;
 
 class Recharge extends Component{
@@ -23,6 +23,10 @@ class Recharge extends Component{
         super(props);
         // 初始状态
         this.state = {};
+    }
+
+    componentDidMount() {
+        this.props.dispatch({type: 'recharge/getCollectionAccounts'});
     }
 
     render(){
@@ -48,7 +52,7 @@ class Recharge extends Component{
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
-                        onClick={() => {}}
+                        onClick={() => {Actions.selectAlipayAccount()}}
                     >支付宝转账</Item>
                     <Item
                         onClick={() => {}}

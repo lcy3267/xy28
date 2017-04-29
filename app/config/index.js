@@ -23,6 +23,7 @@ export default {
 export const weixinAppId = 'wx9d8b9eb6f7a6c46a';
 
 export const pageSize = 10;
+export const md5Key = 'yuan';
 
 export const storageKey = {
 	userInfo: "userInfo",

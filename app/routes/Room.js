@@ -20,6 +20,7 @@ import { connect } from 'dva/mobile';
 import { Carousel, Button, Popup, Grid, Toast } from 'antd-mobile';
 import Common from '../common/index';
 import config from '../config';
+import { formatDate } from '../common/FormatUtil'
 
 const pageHeight = Common.window.height;
 
@@ -66,7 +67,7 @@ class Room extends Component{
         Toast.loading('加载中...');
         //获取开奖时间
         this.timer = setInterval(()=>{
-            this.setState({times: this.getSecond()})
+            this.setState({times: this.getCnaOpenTime()})
         },500);
         //链接房间
         this.socket = SocketIOClient(config.socketDomain, {jsonp: false});
@@ -96,8 +97,6 @@ class Room extends Component{
         this.socket.on('openResult', (result) => {
             this.setState({opening: result.opening});
             if(result.serial_number){
-                console.log(result);
-                console.log("开奖了!!!!");
                 this.setState({integral: result.integral,serial_number: result.serial_number});
             }
         });
@@ -129,6 +128,34 @@ class Room extends Component{
 
         return {minute,second};
     }
+
+    getCnaOpenTime(){
+        let today = new Date();
+        let hour  = today.getHours();
+        let startTime = null;
+        if(hour >= 21){
+            startTime = `${formatDate(today,'yyyy-MM-dd')} 20:57:00`;
+        }else{
+            let yesterday = today.getDate() - 1;
+            startTime = `${formatDate(today,'yyyy-MM')}-${yesterday} 20:57:00`;
+        }
+
+        let startTimestamp = Date.parse(startTime);
+
+        let date = new Date().getTime();
+
+        let distance = date - startTimestamp;
+
+        let result = 210-Math.floor(distance%210000/1000);
+
+        let minute = Math.floor(result/60);
+
+        let second = result%60;
+
+        return {minute,second};
+    }
+
+
 
     showPourList(){
         const onMaskClose = () => {
@@ -205,11 +232,12 @@ class Room extends Component{
 
     firstDom(lottery){
         let times = this.state.times;
+        let openTimeStr = this.state.opening?'封盘中':`${times.minute} 分 ${times.second}秒`;
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
                 <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
                     <Text style={{color: 'white', fontSize: 13}}>距离 {this.state.serial_number+1} 期截止</Text>
-                    <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>{times.minute} 分 {times.second}秒</Text>
+                    <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>{openTimeStr}</Text>
                 </View>
                 <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
                     <View style={{width: 1,height: '68%',backgroundColor: 'white'}} />

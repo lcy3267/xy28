@@ -7,4 +7,8 @@ export default  {
 	gameRoles: {
 		list: 'GET /gameRules/list'
 	},
+	recharge: {
+		getCollectionAccounts: 'GET /recharge/getCollectionAccounts',
+		doAlipayRecharge: 'POST /recharge/alipayRecharge',
+	},
 }

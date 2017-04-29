@@ -16,6 +16,7 @@ import { connect } from 'dva/mobile';
 import { List, InputItem, WhiteSpace, Toast } from 'antd-mobile';
 import Common from '../../common/index';
 import { createForm } from 'rc-form';
+import {md5Key} from '../../config';
 
 class Login extends Component{
     // 构造
@@ -30,11 +31,10 @@ class Login extends Component{
         const {form, dispatch} = this.props;
 
         form.validateFields((error, value) => {
-            console.log(value)
             if(!error){
                 let params = {
                     account: value.account,
-                    password: value.password
+                    password: md5(md5Key+value.password)
                 }
                 dispatch({type:'user/login',params,callback: (rs)=>{
                     if(rs == 'error'){
@@ -48,7 +48,6 @@ class Login extends Component{
     }
 
     render(){
-        const {user} = this.props;
 
         const { getFieldProps } = this.props.form;
 

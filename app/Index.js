@@ -1,13 +1,15 @@
 import React from 'react';
 import { AppRegistry } from 'react-native';
 import dva from 'dva/mobile';
-import user from './models/user'
-import gameRules from './models/gameRules'
+import user from './models/user';
+import gameRules from './models/gameRules';
+import recharge from './models/recharge';
 import Router from './Router'
 
 const app = dva();
 app.model(user);
 app.model(gameRules);
+app.model(recharge);
 
 app.router(() => <Router />);
 

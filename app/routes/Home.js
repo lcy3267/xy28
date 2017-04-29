@@ -4,11 +4,12 @@ import { TabBar } from 'antd-mobile';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import MyTabBar from '../components/MyTabBar';
 import Index from './Index';
-import Recharge from './Recharge';
+import Recharge from './recharge/Recharge';
 import Message from './Message';
 import My from './person/My';
 import Login from './auth/Login';
 import Common from '../common/index';
+import CommonComponent from '../components/Common';
 import { connect } from 'dva/mobile';
 
 const tabBarItems = [
@@ -34,11 +35,11 @@ class Home extends Component{
     onChangeTab(){}
 
     render() {
-
         let {user} = this.props;
 
         return (
             <View style={styles.container}>
+                <CommonComponent />
                 <StatusBar barStyle="light-content"/>
                 <ScrollableTabView
                     style={styles.main}

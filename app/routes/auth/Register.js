@@ -16,6 +16,7 @@ import { connect } from 'dva/mobile';
 import { List, InputItem, WhiteSpace, Toast } from 'antd-mobile';
 import Common from '../../common/index';
 import { createForm } from 'rc-form';
+import { md5Key } from '../../config';
 
 class Register extends Component{
     // 构造
@@ -36,7 +37,7 @@ class Register extends Component{
                 }else{
                     let params = {
                         account: value.account,
-                        password: value.password
+                        password: md5(md5Key+value.password)
                     }
                     dispatch({type:'user/register',params,callback: ()=>{
                         Toast.info('注册成功');
