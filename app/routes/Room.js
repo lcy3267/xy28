@@ -20,7 +20,7 @@ import { connect } from 'dva/mobile';
 import { Carousel, Button, Popup, Grid, Toast } from 'antd-mobile';
 import Common from '../common/index';
 import config from '../config';
-import { formatDate } from '../common/FormatUtil'
+import { formatDate, GetDateStr } from '../common/FormatUtil'
 
 const pageHeight = Common.window.height;
 
@@ -77,12 +77,17 @@ class Room extends Component{
         //监听用户加入房间
         this.socket.on('login', (data) => {
             Toast.hide();
-            let {joinUser, lotteryRs, integral} = data;
+            let {joinUser, lotteryRs, integral, opening} = data;
             if(joinUser.user_id == user.info.user_id){
-                let serial_number = lotteryRs.serial_number;
-                this.setState({lottery: lotteryRs, integral, serial_number},()=>{
-                    Toast.hide();
-                });
+                if(lotteryRs){
+                    let serial_number = +lotteryRs.serial_number;
+                    this.setState({lottery: lotteryRs, serial_number});
+                }else{
+                    this.setState({integral,opening},()=>{
+                        Toast.hide();
+                    });
+                }
+
             }
         });
 
@@ -136,8 +141,7 @@ class Room extends Component{
         if(hour >= 21){
             startTime = `${formatDate(today,'yyyy-MM-dd')} 20:57:00`;
         }else{
-            let yesterday = today.getDate() - 1;
-            startTime = `${formatDate(today,'yyyy-MM')}-${yesterday} 20:57:00`;
+            startTime = `${GetDateStr(-1)} 20:57:00`;
         }
 
         let startTimestamp = Date.parse(startTime);
@@ -154,8 +158,6 @@ class Room extends Component{
 
         return {minute,second};
     }
-
-
 
     showPourList(){
         const onMaskClose = () => {
@@ -232,11 +234,12 @@ class Room extends Component{
 
     firstDom(lottery){
         let times = this.state.times;
-        let openTimeStr = this.state.opening?'封盘中':`${times.minute} 分 ${times.second}秒`;
+        let openTimeStr = this.state.opening?'封盘中':`${times?times.minute:'?'} 分 ${times?times.second:'?'}秒`;
+        const serial_number = this.state.serial_number;
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
                 <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
-                    <Text style={{color: 'white', fontSize: 13}}>距离 {this.state.serial_number+1} 期截止</Text>
+                    <Text style={{color: 'white', fontSize: 13}}>距离 {serial_number?this.state.serial_number+1:'?'} 期截止</Text>
                     <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>{openTimeStr}</Text>
                 </View>
                 <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>

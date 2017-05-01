@@ -29,6 +29,7 @@ export default {
             if(rs && rs.err_code == 0){
                 let info = rs.user;
                 Storage.setItem(storageKey.userInfo, info);
+                Storage.setItem(storageKey.token, rs.token);
                 callback && callback(rs.user_id);
                 yield put({ type: 'bindUser' , info});
             }
@@ -44,6 +45,7 @@ export default {
             if(rs && rs.err_code == 0){
                 let info = rs.user;
                 Storage.setItem(storageKey.userInfo, info);
+                Storage.setItem(storageKey.token, rs.token);
                 callback && callback(rs.user);
                 yield put({ type: 'bindUser' , info});
             }else{

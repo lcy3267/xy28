@@ -27,4 +27,5 @@ export const md5Key = 'yuan';
 
 export const storageKey = {
 	userInfo: "userInfo",
+	token: "token",
 };

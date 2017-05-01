@@ -1,5 +1,7 @@
 import Config from '../config';
 import { Toast } from 'antd-mobile';
+import * as Storage from '../service/storage';
+import {storageKey} from '../config';
 
 const apiDomain = Config.apiDomain;
 const timeout = 15000;
@@ -42,15 +44,28 @@ function timeoutFetch(ms, promise) {
 }
 //成功则返回json数据
 //失败则抛出错误
-export function request(uri, type = "GET", headers = {}, data = ""){
+export async function request(uri, type = "GET", headers = {}, data = ""){
 	uri = apiDomain + uri;
 	let fetchOption = {
 		method: type,
 		headers: headers
 	};
 
+	let token = await Storage.getItem(storageKey.token);
+	if(token){
+		data = data?data:{};
+		data.token = token;
+	}
+
 	if(type === "POST"|| type === "PUT"){
 		fetchOption.body = JSON.stringify(data);
+	}else if(type == "GET"){
+		if(data){
+			uri += '?';
+			for (var key of Object.keys(data)) {
+				uri = `${uri}${key}=${data[key]}&`;
+			}
+		}
 	}
 
 	if(__DEV__){
@@ -78,14 +93,7 @@ export function request(uri, type = "GET", headers = {}, data = ""){
 }
 
 export function get(uri, data = null, headers = {}) {
-	let newUrl = uri;
-	if(data){
-		newUrl += '?';
-		for (var key of Object.keys(data)) {
-			newUrl = `${newUrl}${key}=${data[key]}&`;
-		}
-	}
-	return request(newUrl, "GET", headers);
+	return request(uri, "GET", headers, data);
 }
 
 export function put(url,data){
