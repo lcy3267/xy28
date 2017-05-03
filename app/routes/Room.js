@@ -48,7 +48,7 @@ class Room extends Component{
         this.state = {
             lottery: {}, //上期开奖
             integral: 0,
-            times: this.getSecond(),
+            times: this.getBjOpenTime(),
             messages: messages,
             opening: false,
             dataSource: new ListView.DataSource({
@@ -67,19 +67,25 @@ class Room extends Component{
         Toast.loading('加载中...');
         //获取开奖时间
         this.timer = setInterval(()=>{
-            this.setState({times: this.getCnaOpenTime()})
+            this.setState({times: this.getBjOpenTime()})
         },500);
+
         //链接房间
         this.socket = SocketIOClient(config.socketDomain, {jsonp: false});
 
-        this.socket.emit("login", {user: user.info,roomId: roomId});
-        
+        let login = ()=>{
+            console.log('------login')
+            this.socket.emit("login", {user: user.info,roomId: roomId});
+        }
+        login();
+
         //监听用户加入房间
         this.socket.on('login', (data) => {
             Toast.hide();
             let {joinUser, lotteryRs, integral, opening} = data;
             if(joinUser.user_id == user.info.user_id){
                 if(lotteryRs){
+                    console.log(lotteryRs,'-----lotteryRs-')
                     let serial_number = +lotteryRs.serial_number;
                     this.setState({lottery: lotteryRs, serial_number});
                 }else{
@@ -95,7 +101,7 @@ class Room extends Component{
         this.socket.on('bet', (result) => {
             let messages = this.state.messages;
             messages.push(result.bet);
-            this.setState({messages,integral: result.integral});
+            this.setState({messages});
         });
 
         // 监听开奖结果
@@ -105,6 +111,20 @@ class Room extends Component{
                 this.setState({integral: result.integral,serial_number: result.serial_number});
             }
         });
+
+        this.socket.on('updateIntegral', (data)=>{
+            this.setState({integral: data.integral});
+        })
+
+        this.socket.on('palpitation', (data)=>{
+            let { result } = data;
+            if(result != 'success'){
+                login();
+            }
+            this.palpitationTimer();
+        });
+
+        this.palpitationTimer();
     }
 
     componentWillUnmount() {
@@ -114,11 +134,18 @@ class Room extends Component{
         this.timer && clearTimeout(this.timer);
     }
 
+    palpitationTimer(){
+        //心跳包
+        setTimeout(()=>{
+            this.socket.emit("palpitation");
+        },2000);
+    }
+
     loadEnd(){
         this.refs.mylistView.scrollToEnd();
     }
 
-    getSecond(){
+    getBjOpenTime(){
         var myDate = new Date();
 
         let currentMinute = myDate.getMinutes(); //当前分钟数
@@ -161,6 +188,7 @@ class Room extends Component{
 
     showPourList(){
         const onMaskClose = () => {
+            return false;
         };
         let option = {
             animationType: 'slide-up',
@@ -171,9 +199,15 @@ class Room extends Component{
     }
 
     //下注
-    bottomPour(betType,betMoney){
-        if(!betType) return showToastNoMask('请选择下注类型');
-        if(!betMoney) return showToastNoMask('请输入下注金额');
+    bottomPour(betType,betMoney,onMaskClose){
+        if(!betType){
+            alert('请选择下注类型');
+            return false
+        };
+        if(!betMoney){
+            alert('请输入下注金额');
+            return false;
+        };
         this.sendMessage({betType,betMoney});
         Popup.hide();
     }
