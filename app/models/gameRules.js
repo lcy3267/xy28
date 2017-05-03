@@ -15,9 +15,6 @@ export default {
     },
 
     subscriptions: {
-        setup({ dispatch }) {
-            dispatch({type: 'list'});
-        },
     },
 
     effects: {

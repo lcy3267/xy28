@@ -38,18 +38,16 @@ class Room extends Component{
         this.showPourList = this.showPourList.bind(this);
         this.sendMessage = this.sendMessage.bind(this);
 
-        let messages = [];
+        let {roomId,roomType} = this.props;
 
-        for (let i = 0; i < 13; i++){
-            //messages.push(this.getData());
-        }
-
+        this.roomId = roomId;
+        this.roomType = roomType;
         // 初始状态
         this.state = {
             lottery: {}, //上期开奖
             integral: 0,
             times: this.getBjOpenTime(),
-            messages: messages,
+            messages: [],
             opening: false,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
@@ -58,13 +56,17 @@ class Room extends Component{
     }
 
     componentWillMount() {
-        let {user,roomId} = this.props;
+        let {user, roomId, dispatch} = this.props;
         if(!user.info){
             showToastNoMask('请先进行登录');
             Actions.pop();
             return;
         }
         Toast.loading('加载中...');
+        
+        //获取赔率
+        dispatch({type: 'gameRules/list'})
+        
         //获取开奖时间
         this.timer = setInterval(()=>{
             this.setState({times: this.getBjOpenTime()})
@@ -74,8 +76,7 @@ class Room extends Component{
         this.socket = SocketIOClient(config.socketDomain, {jsonp: false});
 
         let login = ()=>{
-            console.log('------login')
-            this.socket.emit("login", {user: user.info,roomId: roomId});
+            this.socket.emit("login", {user: user.info,roomId: this.roomId, roomType: this.roomType});
         }
         login();
 
@@ -85,7 +86,6 @@ class Room extends Component{
             let {joinUser, lotteryRs, integral, opening} = data;
             if(joinUser.user_id == user.info.user_id){
                 if(lotteryRs){
-                    console.log(lotteryRs,'-----lotteryRs-')
                     let serial_number = +lotteryRs.serial_number;
                     this.setState({lottery: lotteryRs, serial_number});
                 }else{
@@ -93,7 +93,6 @@ class Room extends Component{
                         Toast.hide();
                     });
                 }
-
             }
         });
 
@@ -106,6 +105,9 @@ class Room extends Component{
 
         // 监听开奖结果
         this.socket.on('openResult', (result) => {
+
+            console.log('======',result.opening);
+
             this.setState({opening: result.opening});
             if(result.serial_number){
                 this.setState({integral: result.integral,serial_number: result.serial_number});

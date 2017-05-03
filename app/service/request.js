@@ -44,18 +44,22 @@ function timeoutFetch(ms, promise) {
 }
 //成功则返回json数据
 //失败则抛出错误
-export async function request(uri, type = "GET", headers = {}, data = ""){
+export async function request(uri, type = "GET", data = ""){
 	uri = apiDomain + uri;
+
+	let token = await Storage.getItem(storageKey.token);
+
+	let headers = {
+		'Accept': 'application/json',
+		'Content-Type': 'application/json',
+		'Token': token
+	};
+
 	let fetchOption = {
 		method: type,
 		headers: headers
 	};
 
-	let token = await Storage.getItem(storageKey.token);
-	if(token){
-		data = data?data:{};
-		data.token = token;
-	}
 
 	if(type === "POST"|| type === "PUT"){
 		fetchOption.body = JSON.stringify(data);
@@ -70,12 +74,6 @@ export async function request(uri, type = "GET", headers = {}, data = ""){
 
 	if(__DEV__){
 		console.debug("fetch data from uri:"+ uri);
-		//console.log("fetch data from uri:");
-		//console.log(uri);
-		//console.log("type");
-		//console.log(type);
-		//console.log("headers:");
-		//console.log(headers);
 		console.log("data:");
 		console.log(data);
 	}
@@ -92,29 +90,21 @@ export async function request(uri, type = "GET", headers = {}, data = ""){
 		});
 }
 
-export function get(uri, data = null, headers = {}) {
-	return request(uri, "GET", headers, data);
+export function get(uri, data = null) {
+	return request(uri, "GET", data);
 }
 
 export function put(url,data){
-	let headers = {
-		'Accept': 'application/json',
-		'Content-Type': 'application/json'
-	};
-	return request(url,"PUT",headers,data);
+	return request(url,"PUT",data);
 }
 
 export function post(uri, data = "") {
-	let headers = {
-		'Accept': 'application/json',
-		'Content-Type': 'application/json'
-	};
-	return request(uri, "POST", headers, data);
+	return request(uri, "POST", data);
 }
 
 
-export function remove(uri, headers = {}) {
-	return request(uri, "DELETE", headers);
+export function remove(uri) {
+	return request(uri, "DELETE");
 }
 
 export function sendRequest(uri,params=null){
