@@ -15,12 +15,11 @@ import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 import { Carousel, WhiteSpace, WingBlank } from 'antd-mobile';
 import Common from '../common/index';
-import MyHead from '../components/Head';
 
 const rooms = [
-    {img: require('../asset/one.jpg'), title: '初级房', secondText: '高赔率1%~3%回水', color: '#82CF00', roomId: 'elementary'},
-    {img: require('../asset/two.jpg'), title: '中级房', secondText: '最高回水18%', color: '#7ECFAF', roomId: 'intermediate'},
-    {img: require('../asset/th.jpg'), title: '高级房', secondText: '最该回水18%', color: '#D31F11', roomId: 'higher'},
+    {img: require('../asset/one.jpg'), title: '初级房', secondText: '高赔率1%~3%回水', color: '#82CF00', roomId: '1'},
+    {img: require('../asset/two.jpg'), title: '中级房', secondText: '最高回水18%', color: '#7ECFAF', roomId: '2'},
+    {img: require('../asset/th.jpg'), title: '高级房', secondText: '最该回水18%', color: '#D31F11', roomId: '3'},
 ]
 
 class RoomList extends Component{
@@ -32,12 +31,14 @@ class RoomList extends Component{
     }
 
     render(){
-        const {count,dispatch,roomType} = this.props;
+        const {roomType} = this.props;
+        const str = roomType == 1 ? '北京' : '加拿大';
+
         return (
            <View style={styles.container}>
                {rooms.map((room,index) => (
                    <TouchableOpacity
-                       onPress={()=>{Actions.room({roomId: room.roomId, roomType: roomType})}}
+                       onPress={()=>{Actions.room({title: str+room.title,roomId: room.roomId, roomType: roomType})}}
                        activeOpacity={0.8} style={[styles.card,{marginTop: index == 0?12:6}]} key={index}>
                         <View style={{flex: 2,paddingTop: 40,paddingLeft: 30}}>
                             <Text

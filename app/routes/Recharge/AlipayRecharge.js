@@ -27,7 +27,7 @@ class AlipayRecharge extends Component{
     }
 
     handleChange(value,key){
-        if(key == 'money') value = (+value).mul(100);
+        if(key == 'money') value = +value;
         let params = this.state.params;
         params[key] = value;
         this.setState({params});

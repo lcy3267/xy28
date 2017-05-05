@@ -56,14 +56,14 @@ class Index extends Component{
                     </View>
                     <View style={styles.bottom}>
                         <TouchableOpacity
-                            onPress={()=>{Actions.roomList({roomType: 1})}}
+                            onPress={()=>{Actions.roomList({roomType: 1, title: '北京游28'})}}
                             activeOpacity={0.8} style={[styles.card,{paddingRight:7.5}]}>
                             <Image style={styles.cardImg} source={require('../asset/family1.png')} >
                                 <Text style={styles.gameText}>北京游戏大厅</Text>
                             </Image>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={()=>{Actions.roomList({roomType: 2})}}
+                            onPress={()=>{Actions.roomList({roomType: 2, title: '加拿大28'})}}
                             activeOpacity={0.8} style={[styles.card,{paddingLeft:7.5}]}>
                             <Image style={styles.cardImg} source={require('../asset/family2.png')} >
                                 <Text style={styles.gameText}>加拿大游戏大厅</Text>

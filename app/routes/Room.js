@@ -46,7 +46,7 @@ class Room extends Component{
         this.state = {
             lottery: {}, //上期开奖
             integral: 0,
-            times: this.getBjOpenTime(),
+            overTimes: null,
             messages: [],
             opening: false,
             dataSource: new ListView.DataSource({
@@ -56,24 +56,21 @@ class Room extends Component{
     }
 
     componentWillMount() {
-        let {user, roomId, dispatch} = this.props;
+        let {user, dispatch} = this.props;
         if(!user.info){
             showToastNoMask('请先进行登录');
             Actions.pop();
             return;
         }
-        Toast.loading('加载中...');
+        Toast.loading('加载中...',15);
         
         //获取赔率
-        dispatch({type: 'gameRules/list'})
+        dispatch({type: 'gameRules/list'});
         
-        //获取开奖时间
-        this.timer = setInterval(()=>{
-            this.setState({times: this.getBjOpenTime()})
-        },500);
+        const namespace = this.roomType == 1?'/bj':'/cnd';
 
         //链接房间
-        this.socket = SocketIOClient(config.socketDomain, {jsonp: false});
+        this.socket = SocketIOClient(config.apiDomain+namespace, {jsonp: false});
 
         let login = ()=>{
             this.socket.emit("login", {user: user.info,roomId: this.roomId, roomType: this.roomType});
@@ -85,14 +82,10 @@ class Room extends Component{
             Toast.hide();
             let {joinUser, lotteryRs, integral, opening} = data;
             if(joinUser.user_id == user.info.user_id){
-                if(lotteryRs){
-                    let serial_number = +lotteryRs.serial_number;
-                    this.setState({lottery: lotteryRs, serial_number});
-                }else{
-                    this.setState({integral,opening},()=>{
-                        Toast.hide();
-                    });
-                }
+                let serial_number = +lotteryRs.serial_number;
+                this.setState({lottery: lotteryRs, serial_number, integral, opening},()=>{
+                    Toast.hide();
+                });
             }
         });
 
@@ -105,28 +98,35 @@ class Room extends Component{
 
         // 监听开奖结果
         this.socket.on('openResult', (result) => {
+            const lottery = result.lotteryRs;
+            this.setState({lottery, serial_number: +lottery.serial_number});
+        });
 
-            console.log('======',result.opening);
-
-            this.setState({opening: result.opening});
-            if(result.serial_number){
-                this.setState({integral: result.integral,serial_number: result.serial_number});
-            }
+        this.socket.on('updateStatus', (result) => {
+            let time = result.time;
+            let minute = Math.floor(time/60);
+            let second = time%60;
+            this.setState({opening: result.opening, overTimes: {minute, second}});
         });
 
         this.socket.on('updateIntegral', (data)=>{
             this.setState({integral: data.integral});
+            if(data.winIntegral){
+                this.setState({winIntegral: data.winIntegral});
+            }
         })
+
+        //心跳包
+        this.palpitationTimer = setInterval(()=>{
+            this.socket.emit("palpitation");
+        },2000);
 
         this.socket.on('palpitation', (data)=>{
             let { result } = data;
             if(result != 'success'){
                 login();
             }
-            this.palpitationTimer();
         });
-
-        this.palpitationTimer();
     }
 
     componentWillUnmount() {
@@ -134,20 +134,14 @@ class Room extends Component{
         // 如果存在this.timer，则使用clearTimeout清空。
         // 如果你使用多个timer，那么用多个变量，或者用个数组来保存引用，然后逐个clear
         this.timer && clearTimeout(this.timer);
-    }
-
-    palpitationTimer(){
-        //心跳包
-        setTimeout(()=>{
-            this.socket.emit("palpitation");
-        },2000);
+        this.palpitationTimer && clearTimeout(this.palpitationTimer);
     }
 
     loadEnd(){
         this.refs.mylistView.scrollToEnd();
     }
 
-    getBjOpenTime(){
+    getBjOpenTime = ()=>{
         var myDate = new Date();
 
         let currentMinute = myDate.getMinutes(); //当前分钟数
@@ -159,33 +153,7 @@ class Room extends Component{
         let minute = next - single -1;
         let second = 60 - currentSecond -1;
 
-
-        return {minute,second};
-    }
-
-    getCnaOpenTime(){
-        let today = new Date();
-        let hour  = today.getHours();
-        let startTime = null;
-        if(hour >= 21){
-            startTime = `${formatDate(today,'yyyy-MM-dd')} 20:57:00`;
-        }else{
-            startTime = `${GetDateStr(-1)} 20:57:00`;
-        }
-
-        let startTimestamp = Date.parse(startTime);
-
-        let date = new Date().getTime();
-
-        let distance = date - startTimestamp;
-
-        let result = 210-Math.floor(distance%210000/1000);
-
-        let minute = Math.floor(result/60);
-
-        let second = result%60;
-
-        return {minute,second};
+        this.setState({time: {minute,second}});
     }
 
     showPourList(){
@@ -216,6 +184,7 @@ class Room extends Component{
 
     //发送消息
     sendMessage({betType,betMoney}){
+        if(this.state.opening) return;
         let {user} = this.props;
         let lottery = this.state.lottery;
         var bet = {
@@ -269,8 +238,8 @@ class Room extends Component{
     }
 
     firstDom(lottery){
-        let times = this.state.times;
-        let openTimeStr = this.state.opening?'封盘中':`${times?times.minute:'?'} 分 ${times?times.second:'?'}秒`;
+        let overTimes = this.state.overTimes;
+        let openTimeStr = this.state.opening?'封盘中':`${overTimes?overTimes.minute:'?'} 分 ${overTimes?overTimes.second:'?'}秒`;
         const serial_number = this.state.serial_number;
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
@@ -280,7 +249,10 @@ class Room extends Component{
                 </View>
                 <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
                     <View style={{width: 1,height: '68%',backgroundColor: 'white'}} />
-                    <View style={{marginLeft: 40}}><Text style={{color: 'white'}}>{this.state.integral}</Text></View>
+                    <View style={{marginLeft: 40}}>
+                        <Text style={{color: 'white'}}>{this.state.integral}</Text>
+                        <Text style={{color: 'red', marginLeft: 15}}>{this.state.winIntegral?this.state.winIntegral:''}</Text>
+                    </View>
                 </View>
             </View>
         );
@@ -313,7 +285,7 @@ class Room extends Component{
                     this.loadEnd();
                 }
             }}>
-                {bet.user.user_id !== user.info.user_id?this.leftMassageView(bet):this.leftMassageView(bet)}
+                {bet.user.user_id !== user.info.user_id?this.leftMassageView(bet):this.rightMassageView(bet)}
             </View>
         )
     }
@@ -349,28 +321,34 @@ class Room extends Component{
         )
     }
 
-    rightMassageView(data){
-        let {userInfo} = this.props;
-        let user = userInfo.user;
-        let myHead = user.avatar_url?user.avatar_url:user.avatar_picture_url?user.avatar_picture_url:defaultHead;
+    rightMassageView(bet){
         return (
             <View style={[styles.item,{justifyContent:'flex-end'}]}>
                 <View style={styles.itemContentView}>
-                    <View style={[styles.itemContent,{backgroundColor:'#2d343a',right:-12}]}>
-                        <Text style={[styles.itemContentText,{color:'white'}]}>{data.content}</Text>
+                    <View style={{flexDirection: 'column',width: 220}}>
+                        <View style={{height: 15}}>
+                            <Text style={{fontSize: 12, textAlign: 'right'}}>{bet.user.name}</Text>
+                        </View>
+                        <View style={{backgroundColor: '#47B5F5',flexDirection: 'column',borderRadius: 5,padding: 8}}>
+                            <View style={{flexDirection: 'row'}}>
+                                <View style={{flex: 1}}>
+                                    <Text style={{color: 'white'}}>{bet.serial_number}期</Text>
+                                </View>
+                                <View style={{flex: 1}}>
+                                    <Text style={{color: 'white'}}>投注类型: {formatRule(bet.type)}</Text>
+                                </View>
+                            </View>
+                            <View style={{marginTop: 5}}>
+                                <Text style={{color: 'white'}}>金额: {bet.money}元宝</Text>
+                            </View>
+                        </View>
                     </View>
-                    <View style={styles.grayAngle}>
-                        <Image style={styles.grayAngleImage} source={require('../asset/blackAngle.png')}/>
+                    <View>
+                        <TouchableOpacity style={styles.imageView}>
+                            <Image style={styles.itemImage} source={require('../asset/th.jpg')}/>
+                        </TouchableOpacity>
                     </View>
                 </View>
-                <TouchableOpacity
-                    style={styles.imageView}
-                    onPress={()=>{
-                        this._goToPersonCenter(data)
-                    }}
-                >
-                    <Image style={styles.itemImage} source={{uri:myHead}}/>
-                </TouchableOpacity>
             </View>
         )
     }

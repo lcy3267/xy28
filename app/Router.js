@@ -14,12 +14,12 @@ const RouterComponent = () => {
     <Router sceneStyle={{ paddingTop: 0 }}>
       <Scene key="/">
         <Scene key="home" component={Home} initial={true} hideNavBar={true}/>
-          {SetScene('roomList','北京28',RoomList)}
-          {SetScene('register','注册',Register)}
-          {SetScene('personSet','设置',PersonSet)}
-          {SetScene('selectAlipayAccount','选择支付宝账号',SelectAlipayAccount)}
-          {SetScene('alipayRecharge','支付宝转账',AlipayRecharge)}
-          {SetScene('room','初级房',Room,<Icon
+          {SetScene('roomList', '房间列表', RoomList)}
+          {SetScene('register', '注册', Register)}
+          {SetScene('personSet', '设置', PersonSet)}
+          {SetScene('selectAlipayAccount', '选择支付宝账号', SelectAlipayAccount)}
+          {SetScene('alipayRecharge', '支付宝转账', AlipayRecharge)}
+          {SetScene('room', '初级房', Room, <Icon
               onPress={()=>alert("Right button")}
               name="md-add" color='white' size={25}/>,false)}
        </Scene>
