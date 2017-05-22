@@ -56,7 +56,23 @@ export default {
             yield put({type: 'bindUser', info: null});
             Storage.removeItem(storageKey.userInfo);
             callback && callback();
-        }
+        },
+        *bindBank({params, callback},{put}){
+            let rs = yield sendRequest(api.user.bindBank,params);
+            if(rs && rs.err_code == 0){
+                callback && callback(rs.user);
+            }else{
+                callback('error');
+            }
+        },
+        *getBankCards({callback}){
+            let rs = yield sendRequest(api.user.getBankCards);
+            if(rs && rs.err_code == 0){
+                callback && callback(rs.cards);
+            }else{
+                callback('error');
+            }
+        },
     },
 
     reducers: {

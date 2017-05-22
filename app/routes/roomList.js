@@ -13,32 +13,87 @@ import {
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
-import { Carousel, WhiteSpace, WingBlank } from 'antd-mobile';
+import { Carousel, WhiteSpace, WingBlank, Toast } from 'antd-mobile';
 import Common from '../common/index';
-
-const rooms = [
-    {img: require('../asset/one.jpg'), title: '初级房', secondText: '高赔率1%~3%回水', color: '#82CF00', roomId: '1'},
-    {img: require('../asset/two.jpg'), title: '中级房', secondText: '最高回水18%', color: '#7ECFAF', roomId: '2'},
-    {img: require('../asset/th.jpg'), title: '高级房', secondText: '最该回水18%', color: '#D31F11', roomId: '3'},
-]
 
 class RoomList extends Component{
     // 构造
     constructor(props) {
-      super(props);
-      // 初始状态
-      this.state = {};
+        super(props);
+        this.formatRooms = this.formatRooms.bind(this);
+        // 初始状态
+        this.state = {
+            rooms: []
+        };
+    }
+
+    componentWillMount() {
+        const {dispatch} = this.props;
+
+        dispatch({type: 'rooms/getRooms'})
+    }
+
+    formatRooms(rooms){
+
+        const {roomType} = this.props;
+
+        rooms = rooms.filter((room)=>room.room_type == roomType);
+
+        rooms = rooms.map((room, index)=>{
+            const {level, is_speak, status} = room;
+            room.img = this.getRoomImg(level);
+            room.title = this.getRoomLevel(level);
+            room.secondText = '最该回水18%';
+            room.color = this.getRoomColor(level);
+            return room;
+        });
+
+        return rooms;
+    }
+
+    getRoomImg(level){
+        if(level == 1) return require(`../asset/level_1.jpg`);
+        if(level == 2) return require(`../asset/level_2.jpg`);
+        if(level == 3) return require(`../asset/level_3.jpg`);
+    }
+
+    getRoomLevel(level){
+        if(level == 1) return '初级房';
+        if(level == 2) return '中级房';
+        if(level == 3) return '高级房';
+    }
+
+    getRoomColor(level){
+        if(level == 1) return '#82CF00';
+        if(level == 2) return '#7ECFAF';
+        if(level == 3) return '#D31F11';
+    }
+
+    joinRoom(room){
+
+        const {room_type, title, id, is_speak, status} = room;
+
+        if(status == -1) {
+            Toast.info('该房间已暂时关闭,请进入其他房间进行游戏', 4);
+            return;
+        }
+
+        const str = room_type == 1 ? '北京' : '加拿大';
+
+        Actions.room({title: str+title,roomId: id, roomType: room_type, isSpeak: is_speak});
     }
 
     render(){
-        const {roomType} = this.props;
-        const str = roomType == 1 ? '北京' : '加拿大';
+
+        let {rooms} = this.props.rooms;
+
+        rooms = this.formatRooms(rooms);
 
         return (
            <View style={styles.container}>
                {rooms.map((room,index) => (
                    <TouchableOpacity
-                       onPress={()=>{Actions.room({title: str+room.title,roomId: room.roomId, roomType: roomType})}}
+                       onPress={()=>{this.joinRoom(room)}}
                        activeOpacity={0.8} style={[styles.card,{marginTop: index == 0?12:6}]} key={index}>
                         <View style={{flex: 2,paddingTop: 40,paddingLeft: 30}}>
                             <Text
@@ -91,8 +146,8 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = () => {
-    return {};
+const mapStateToProps = ({rooms}) => {
+    return {rooms};
 };
 
 export default connect(mapStateToProps)(RoomList);

@@ -6,6 +6,10 @@ import RoomList from './routes/RoomList';
 import Room from './routes/Room';
 import Register from './routes/auth/Register';
 import PersonSet from './routes/person/PersonSet';
+import Wallet from './routes/person/Wallet';
+import BindBank from './routes/person/BindBank';
+import SetWithdrawPwd from './routes/person/SetWithdrawPwd';
+import MyBankCard from './routes/person/MyBankCard';
 import SelectAlipayAccount from './routes/recharge/SelectAlipayAccount';
 import AlipayRecharge from './routes/recharge/AlipayRecharge';
 
@@ -19,6 +23,10 @@ const RouterComponent = () => {
           {SetScene('personSet', '设置', PersonSet)}
           {SetScene('selectAlipayAccount', '选择支付宝账号', SelectAlipayAccount)}
           {SetScene('alipayRecharge', '支付宝转账', AlipayRecharge)}
+          {SetScene('wallet', '钱包', Wallet)}
+          {SetScene('bindBank', '设置', BindBank)}
+          {SetScene('setWithdrawPwd', '设置', SetWithdrawPwd)}
+          {SetScene('myBankCard', '银行卡', MyBankCard)}
           {SetScene('room', '初级房', Room, <Icon
               onPress={()=>alert("Right button")}
               name="md-add" color='white' size={25}/>,false)}

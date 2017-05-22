@@ -33,6 +33,22 @@ class PersonSet extends Component{
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
+                        onClick={Actions.setWithdrawPwd}
+                    >提现密码</Item>
+                    <Item
+                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        arrow="horizontal"
+                        onClick={Actions.setWithdrawPwd}
+                    >修改密码</Item>
+                    <Item
+                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        arrow="horizontal"
+                        onClick={Actions.bindBank}
+                    >绑定银行卡</Item>
+                    <Item style={{backgroundColor: '#F5F5F9', height: 20}}/>
+                    <Item
+                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        arrow="horizontal"
                         onClick={()=>{
                             Alert.alert('','确定退出登录吗?',[
                               {text: '取消', onPress: () => console.log('OK Pressed!')},

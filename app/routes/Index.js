@@ -35,7 +35,7 @@ class Index extends Component{
                         <Carousel
                             className="my-carousel" autoplay={true} infinite
                         >
-                            {[require('../asset/one.jpg'),require('../asset/two.jpg'),require('../asset/th.jpg')].map(ii => (
+                            {[require('../asset/level_1.jpg'),require('../asset/level_2.jpg'),require('../asset/level_3.jpg')].map(ii => (
                                 <TouchableHighlight key={ii}>
                                     <Image style={styles.actImage} source={ii} />
                                 </TouchableHighlight>
@@ -44,7 +44,7 @@ class Index extends Component{
                     </View>
                     <View style={styles.news}>
                         <View style={styles.newsLeft}>
-                            <Text style={styles.newsText}>斤斤计较军军</Text>
+                            <Text style={styles.newsText}>通知</Text>
                         </View>
                         <View style={[styles.newsRight,{padding: 10}]}>
                             <View><Text style={{color: '#EED650',fontSize: 12}}>最新公告:</Text></View>
@@ -58,15 +58,15 @@ class Index extends Component{
                         <TouchableOpacity
                             onPress={()=>{Actions.roomList({roomType: 1, title: '北京游28'})}}
                             activeOpacity={0.8} style={[styles.card,{paddingRight:7.5}]}>
-                            <Image style={styles.cardImg} source={require('../asset/family1.png')} >
-                                <Text style={styles.gameText}>北京游戏大厅</Text>
+                            <Image style={styles.cardImg} source={require('../asset/91b4af37023f9b7fca2f934fc66ce8e4.png')} >
+                                <Text style={styles.gameText}>北京28</Text>
                             </Image>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={()=>{Actions.roomList({roomType: 2, title: '加拿大28'})}}
                             activeOpacity={0.8} style={[styles.card,{paddingLeft:7.5}]}>
-                            <Image style={styles.cardImg} source={require('../asset/family2.png')} >
-                                <Text style={styles.gameText}>加拿大游戏大厅</Text>
+                            <Image style={styles.cardImg} source={require('../asset/1c84ea44fe055fb9244ab18becd159bb.png')} >
+                                <Text style={styles.gameText}>加拿大28</Text>
                             </Image>
                         </TouchableOpacity>
                     </View>
@@ -106,13 +106,16 @@ const styles = StyleSheet.create({
         borderLeftWidth: 0,
         borderTopWidth: 0,
         borderBottomWidth: 0,
+        paddingTop: 10,
+        paddingLeft: 5,
     },
     newsRight: {
         flex: 6,
     },
     newsText: {
         color: 'white',
-        padding: 20
+        padding: 20,
+        fontSize: 16
     },
     bottom: {
         width: Common.window.width,
@@ -131,14 +134,14 @@ const styles = StyleSheet.create({
         borderWidth: 4,
         borderColor: '#A39054',
         alignItems: 'center',
-
-        //justifyContent: 'center'
+        backgroundColor: '#278C99'
     },
     gameText: {
         marginTop: 20,
         backgroundColor:'transparent',
         color: 'white',
-        fontSize: 18,
+        fontSize: 20,
+        fontWeight: 'bold'
     },
 });
 

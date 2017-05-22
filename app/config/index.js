@@ -29,3 +29,18 @@ export const storageKey = {
 	userInfo: "userInfo",
 	token: "token",
 };
+
+export const combineRates = {
+	big: '大',
+	small: '小',
+	single: '单',
+	double: '双',
+	max: '极大',
+	big_single: '大单',
+	big_double: '大双',
+	small_single: '小单',
+	small_double: '小双',
+	min: '极小'
+}
+
+export const formatRules = ['大','小','单','双','大单','大双','小单','小双','极大','极小'];

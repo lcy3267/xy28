@@ -31,7 +31,6 @@ export default {
             return Object.assign({}, state, info);
         },
         setCollectionAccounts(state,{collectionAccounts}) {
-            console.log()
             return {...state, collectionAccounts};
         },
     },

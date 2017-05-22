@@ -12,17 +12,20 @@ import {
     ListView,
     Platform,
     TextInput,
-    KeyboardAvoidingView
+    KeyboardAvoidingView,
 } from 'react-native';
 import SocketIOClient from "socket.io-client";
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
-import { Carousel, Button, Popup, Grid, Toast } from 'antd-mobile';
+import { Carousel, Button, Popup, Grid, Toast, Tabs } from 'antd-mobile';
 import Common from '../common/index';
-import config from '../config';
+import config,{ combineRates } from '../config';
 import { formatDate, GetDateStr } from '../common/FormatUtil'
 
 const pageHeight = Common.window.height;
+const pageWidth = Common.window.width;
+const TabPane = Tabs.TabPane;
+
 
 const showToastNoMask = (message) =>{
     Toast.info(message, 2, null, false);
@@ -32,22 +35,25 @@ class Room extends Component{
     // 构造
     constructor(props) {
         super(props);
-        this.leftMassageView = this.leftMassageView.bind(this);
         this.firstDom = this.firstDom.bind(this);
         this.loadEnd = this.loadEnd.bind(this);
         this.showPourList = this.showPourList.bind(this);
-        this.sendMessage = this.sendMessage.bind(this);
+        this.doBottomPour = this.doBottomPour.bind(this);
+        this.loadRoomGameRules = this.loadRoomGameRules.bind(this);
 
-        let {roomId,roomType} = this.props;
+        let {roomId, roomType, isSpeak} = this.props;
 
         this.roomId = roomId;
         this.roomType = roomType;
+        //是否允许发言
+        this.is_speak = isSpeak;
+
         // 初始状态
         this.state = {
             lottery: {}, //上期开奖
             integral: 0,
             overTimes: null,
-            messages: [],
+            messages: [],//type: 0 用户发言, -1:系统消息, 1~10:下注
             opening: false,
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
@@ -56,17 +62,21 @@ class Room extends Component{
     }
 
     componentWillMount() {
-        let {user, dispatch} = this.props;
+        let {user, dispatch, is_speak} = this.props;
         if(!user.info){
             showToastNoMask('请先进行登录');
             Actions.pop();
             return;
         }
+
         Toast.loading('加载中...',15);
-        
-        //获取赔率
-        dispatch({type: 'gameRules/list'});
-        
+
+        //加载5条下注记录
+        dispatch({type: 'bet/records'});
+
+        //加载赔率规则
+        this.loadRoomGameRules();
+
         const namespace = this.roomType == 1?'/bj':'/cnd';
 
         //链接房间
@@ -96,6 +106,24 @@ class Room extends Component{
             this.setState({messages});
         });
 
+        // 监听聊天
+        this.socket.on('msg', (result) => {
+            const {msg} = result;
+            let messages = this.state.messages;
+            if(msg.err_code == 0){
+                messages.push(msg);
+
+            }else if(msg.err_code == -1){
+                let sysMsg = {
+                    type: -1,
+                    content: '您已经被管理员禁言'
+                }
+                messages.push(sysMsg);
+            }
+            this.setState({messages});
+
+        });
+
         // 监听开奖结果
         this.socket.on('openResult', (result) => {
             const lottery = result.lotteryRs;
@@ -114,7 +142,13 @@ class Room extends Component{
             if(data.winIntegral){
                 this.setState({winIntegral: data.winIntegral});
             }
-        })
+        });
+
+        //监听赔率变动
+        this.socket.on('updateRules', (rule)=>{
+            Toast.info('管理修改了赔率设置!!', 4);
+            dispatch({type: 'gameRules/list'});
+        });
 
         //心跳包
         this.palpitationTimer = setInterval(()=>{
@@ -125,6 +159,19 @@ class Room extends Component{
             let { result } = data;
             if(result != 'success'){
                 login();
+            }
+        });
+    }
+
+    loadRoomGameRules(){
+        //获取赔率
+        this.props.dispatch({
+            type: 'gameRules/roomGameRule',
+            params: {
+                roomId: this.roomId,
+            },
+            callback: (gameRules)=>{
+                this.setState({ gameRules });
             }
         });
     }
@@ -165,11 +212,11 @@ class Room extends Component{
             maskClosable: true,
             onMaskClose,
         };
-        Popup.show(<PopupContent bottomPour={this.bottomPour.bind(this)} {...this.props}/>,option);
+        Popup.show(<PopupContent bottomPour={this.bottomPour.bind(this)} {...this.props} gameRules={this.state.gameRules}/>,option);
     }
 
     //下注
-    bottomPour(betType,betMoney,onMaskClose){
+    bottomPour(betType, betMoney, playType){
         if(!betType){
             alert('请选择下注类型');
             return false
@@ -178,23 +225,43 @@ class Room extends Component{
             alert('请输入下注金额');
             return false;
         };
-        this.sendMessage({betType,betMoney});
+        this.doBottomPour({betType, betMoney, playType});
         Popup.hide();
     }
 
-    //发送消息
-    sendMessage({betType,betMoney}){
+    //下注
+    doBottomPour({betType,betMoney,playType}){
         if(this.state.opening) return;
-        let {user} = this.props;
-        let lottery = this.state.lottery;
+        let {user: {info}} = this.props;
         var bet = {
-            user: user.info,
-            type: betType,
+            user: getSendUser(info),
+            playType,
+            type: playType == 1 ? betType : null,
             money: betMoney,
-            number: null,
+            number: playType == 2 ? betType : null,
             serial_number: this.state.serial_number+1
         };
         this.socket.emit('bet', bet);
+    }
+
+    sendMessage(e){
+
+        if(this.is_speak == -1) {
+            showToastNoMask('该房间已被禁言!');
+            return;
+        }
+
+        let msg = e.nativeEvent.text;
+        if(msg){
+            let {user: {info}} = this.props;
+            const item = {
+                type: 0,
+                user: getSendUser(info),
+                content: msg
+            }
+            this.socket.emit('msg', {msg: item});
+            this.setState({text: null});
+        }
     }
 
     render(){
@@ -226,9 +293,11 @@ class Room extends Component{
                        <View style={{flex: 1,height: '100%',justifyContent: 'center',
                                     alignItems: 'center',paddingLeft: 10,paddingRight: 10}}>
                            <TextInput
-                                style={{height: 35, backgroundColor: 'white', width: '100%'}}
-                                onChangeText={(text) => this.setState({text})}
-                                value={this.state.text}
+                               returnKeyType="send"
+                               style={{height: 35, backgroundColor: 'white', width: '100%'}}
+                               onChangeText={(text) => this.setState({text})}
+                               onSubmitEditing={this.sendMessage.bind(this)}
+                               value={this.state.text}
                             />
                        </View>
                    </View>
@@ -277,26 +346,87 @@ class Room extends Component{
         );
     }
 
-    _renderRow(bet){
+    _renderRow(item){
         let {user} = this.props;
+        let content = null;
+        if(item.type == 0){
+            content = item.user.user_id !== user.info.user_id?this.letfMessageView(item):this.rightMessageView(item);
+        }else if(item.type == -1){
+            content = this.systemMessageView(item.content);
+        }else{
+            content = item.user.user_id !== user.info.user_id?this.leftBetMessageView(item):this.rightBetMessageView(item)
+        }
         return(
             <View onLayout={()=>{
                 if(this.state.messages.length > 5){
                     this.loadEnd();
                 }
-            }}>
-                {bet.user.user_id !== user.info.user_id?this.leftMassageView(bet):this.rightMassageView(bet)}
+            }}>{content}</View>
+        )
+    }
+
+    systemMessageView(content){
+        return (
+            <View style={{width: '100%', alignItems: 'center'}}>
+                <View style={{backgroundColor: '#DEDEDE', marginVertical: 8, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 4}}>
+                    <Text style={{color: 'black'}}>{content}</Text>
+                </View>
+            </View>
+        )
+    }
+
+    letfMessageView(item){
+        return (
+            <View style={styles.item}>
+                <View>
+                    <TouchableOpacity style={styles.imageView}>
+                        <Image style={styles.itemImage} source={require('../asset/level_3.jpg')}/>
+                    </TouchableOpacity>
+                </View>
+                <View style={{flexDirection: 'column', paddingRight: 110}}>
+                    <View style={{height: 15,paddingLeft: 0}}>
+                        <Text style={{fontSize: 12}}>{item.user.name}</Text>
+                    </View>
+                    <View style={{backgroundColor: '#47B5F5',borderRadius: 5,padding: 8, flexWrap: 'wrap'}}>
+                        <Text style={{color: 'white', flexWrap: 'wrap'}}>{item.content}</Text>
+                    </View>
+                </View>
+            </View>
+        )
+    }
+
+    rightMessageView(item){
+        return (
+            <View style={[styles.item,{justifyContent:'flex-end'}]}>
+                <View style={{flexDirection: 'column', marginLeft: 110}}>
+                    <View style={{height: 15,paddingLeft: 0}}>
+                        <Text style={{fontSize: 12, textAlign: 'right'}}>{item.user.name}</Text>
+                    </View>
+                    <View style={{backgroundColor: '#47B5F5',flexDirection: 'column',borderRadius: 5,padding: 8}}>
+                        <Text style={{color: 'white'}}>{item.content}</Text>
+                    </View>
+                </View>
+                <View>
+                    <TouchableOpacity style={styles.imageView}>
+                        <Image style={styles.itemImage} source={require('../asset/level_3.jpg')}/>
+                    </TouchableOpacity>
+                </View>
             </View>
         )
     }
 
 
-    leftMassageView(bet){
+    leftBetMessageView(bet){
+
+        console.log(bet);
+
+        let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : `单点(${bet.number})`;
+
         return (
             <View style={styles.item}>
                 <View>
                     <TouchableOpacity style={styles.imageView}>
-                        <Image style={styles.itemImage} source={require('../asset/th.jpg')}/>
+                        <Image style={styles.itemImage} source={require('../asset/level_3.jpg')}/>
                     </TouchableOpacity>
                 </View>
                 <View style={{flexDirection: 'column',width: 220}}>
@@ -309,7 +439,7 @@ class Room extends Component{
                                 <Text style={{color: 'white'}}>{bet.serial_number}期</Text>
                             </View>
                             <View style={{flex: 1}}>
-                                <Text style={{color: 'white'}}>投注类型: {formatRule(bet.type)}</Text>
+                                <Text style={{color: 'white'}}>投注类型: {betTypeStr}</Text>
                             </View>
                         </View>
                         <View style={{marginTop: 5}}>
@@ -321,7 +451,11 @@ class Room extends Component{
         )
     }
 
-    rightMassageView(bet){
+    rightBetMessageView(bet){
+
+
+        let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
+
         return (
             <View style={[styles.item,{justifyContent:'flex-end'}]}>
                 <View style={styles.itemContentView}>
@@ -329,13 +463,13 @@ class Room extends Component{
                         <View style={{height: 15}}>
                             <Text style={{fontSize: 12, textAlign: 'right'}}>{bet.user.name}</Text>
                         </View>
-                        <View style={{backgroundColor: '#47B5F5',flexDirection: 'column',borderRadius: 5,padding: 8}}>
+                        <View style={{backgroundColor: '#F16B00',flexDirection: 'column',borderRadius: 5,padding: 8}}>
                             <View style={{flexDirection: 'row'}}>
                                 <View style={{flex: 1}}>
                                     <Text style={{color: 'white'}}>{bet.serial_number}期</Text>
                                 </View>
                                 <View style={{flex: 1}}>
-                                    <Text style={{color: 'white'}}>投注类型: {formatRule(bet.type)}</Text>
+                                    <Text style={{color: 'white'}}>投注类型: {betTypeStr}</Text>
                                 </View>
                             </View>
                             <View style={{marginTop: 5}}>
@@ -345,7 +479,7 @@ class Room extends Component{
                     </View>
                     <View>
                         <TouchableOpacity style={styles.imageView}>
-                            <Image style={styles.itemImage} source={require('../asset/th.jpg')}/>
+                            <Image style={styles.itemImage} source={require('../asset/level_1.jpg')}/>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -354,6 +488,9 @@ class Room extends Component{
     }
 }
 
+import Icon from 'react-native-vector-icons/Ionicons';
+
+
 class PopupContent extends Component {
 
     // 构造
@@ -361,11 +498,13 @@ class PopupContent extends Component {
         super(props);
         this.moneyChange = this.moneyChange.bind(this);
         // 初始状态
-        this.state = {};
+        this.state = {
+            tabKey: 1,
+        };
     }
 
     bottomPour(){
-        this.props.bottomPour(this.state.betType,this.state.betMoney);
+        this.props.bottomPour(this.state.betType, this.state.betMoney, this.state.playType);
     }
 
     moneyChange(betMoney){
@@ -376,34 +515,87 @@ class PopupContent extends Component {
         this.setState({hasPosition});
     }
 
-    render() {
-        let {rules} = this.props.gameRules;
+    callback(key) {
+        console.log('onChange', key);
+    }
 
-        let firstRules = rules.filter((rule)=>rule.type != -1);
+    handleTabClick(key) {
+        console.log('onTabClick', key);
+    }
+
+    tabMove = (key)=>{
+        this.setState({
+            tabKey: key,
+        });
+    }
+
+    render() {
+        let gameRules = this.props.gameRules;
+
+        let combineRate = gameRules[0],
+            newSingleRate = gameRules[1];
 
         let centerStyle = {alignItems: 'center',justifyContent: 'center'};
 
+        let combineRuleView = [];
+
+        for(let key of Object.keys(combineRate)){
+            combineRuleView[combineRate[key].index] = (
+                <View key={key} style={{width: '20%',height: 50,paddingHorizontal: 20}}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={()=>{this.setState({selectRule: key, betType: key, playType: 1})}}
+                        style={[key == this.state.selectRule ?
+                            {borderWidth: 1,borderColor: 'white'} : null,centerStyle]}>
+                        <Text style={{color: 'white'}}>{combineRates[key]}</Text>
+                        <Text style={{color: 'white'}}>1:{combineRate[key].value}</Text>
+                    </TouchableOpacity>
+                </View>
+            )
+        }
+
+        let singleRuleView = [];
+
+        newSingleRate.map((rates, index)=>{
+            let arr = [];
+            rates.map((rate, second)=>{
+                const key = (index * 5) + second;
+                arr.push(
+                    <View key={key} style={{width: '20%',height: 50,paddingHorizontal: 10}}>
+                        <TouchableOpacity
+                            key={key}
+                            activeOpacity={1}
+                            onPress={()=>{this.setState({betType: key, playType: 2})}}
+                            style={[key == this.state.betType ?
+                                {borderWidth: 1,borderColor: 'white'} : null,centerStyle]}>
+                            <Text style={{color: 'white'}}>{key}</Text>
+                            <Text style={{color: 'white'}}>1 : {rate}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )
+            });
+            singleRuleView.push(<View key={index} style={{width: '100%',flexDirection: 'row',flexWrap: 'wrap'}}>{arr}</View>)
+        });
+
         return (
-            <View behavior='position:100' style={{backgroundColor: '#48B0FF',paddingBottom:this.state.hasPosition?220:0}}>
-                <View style={[{height: 50},centerStyle]}>
-                    <Text style={{color: 'white'}}>大小单双</Text>
+            <View style={{backgroundColor: '#48B0FF', paddingBottom:this.state.hasPosition?220:0}}>
+                <View style={[{flexDirection: 'row',height: 50},centerStyle]}>
+                    <Icon onPress={()=>{this.tabMove(1)}} name='md-arrow-dropleft' size={30} style={{color: 'white'}}/>
+                    <Text style={{color: 'white', marginLeft: 100, marginRight: 100}}>大小单双</Text>
+                    <Icon onPress={()=>{this.tabMove(2)}} name='md-arrow-dropright' size={30} style={{color: 'white'}}/>
                 </View>
-                <View style={{height: 100,flexDirection: 'row',flexWrap: 'wrap'}}>
-                    {firstRules.map((rule,i)=>{
-                        return (
-                            <View key={i} style={{width: '20%',height: 50,paddingHorizontal: 20}}>
-                                <TouchableOpacity
-                                    activeOpacity={1}
-                                    onPress={()=>{this.setState({selectRule:i,betType:rule.type})}}
-                                    style={[i == this.state.selectRule ?
-                                        {borderWidth: 1,borderColor: 'white'} : null,centerStyle]}>
-                                    <Text style={{color: 'white'}}>{formatRule(rule.type)}</Text>
-                                    <Text style={{color: 'white'}}>1:{rule.rate}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        );
-                    })}
+
+                <View style={{width: '200%', flexDirection: 'row', left: this.state.tabKey == 2?-pageWidth:0, }}>
+
+                    <View style={{flex: 1,height: 100,flexDirection: 'row',flexWrap: 'wrap'}}>
+                        {combineRuleView}
+                    </View>
+
+                    <ScrollView style={{flex: 1,height: 100}}>
+                        {singleRuleView}
+                    </ScrollView>
                 </View>
+
                 <View style={[{flexDirection: 'row', height: 40,justifyContent: 'space-between',paddingHorizontal: 20}]}>
                     <Button size="small" type="ghost" style={{borderRadius: 4,height: 30,borderColor: 'white'}}>
                         <Text style={{color: 'white',}}>赔率说明</Text>
@@ -439,9 +631,12 @@ class PopupContent extends Component {
     }
 }
 
-function formatRule(type){
-    let str = ['大','小','单','双','大单','大双','小单','小双','极大','极小'];
-    return str[type-1];
+function getSendUser(info) {
+    return {
+        user_id: info.user_id,
+        name: info.name,
+        avatar_picture_url: info.avatar_picture_url
+    }
 }
 
 const styles = StyleSheet.create({
@@ -546,10 +741,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    ruleContent: {
+        flex: 1,
+        height: 100,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        overflow: 'hidden'
+    },
     ruleButton: {
         backgroundColor: 'white',borderRadius: 4,
         height: 30,
-    }
+    },
 });
 
 const mapStateToProps = ({gameRules,user}) => {

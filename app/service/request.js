@@ -16,6 +16,12 @@ function filterJSON(res) {
 function filterStatus(res) {
 	if (res.ok) {
 		return res;
+	} else if(res.status == 403){
+		Toast.info('无操作权限');
+		throw new Error('Forbidden 403');
+	}else if(res.status == 401){
+		Toast.info('丢失登录态,请重新登录');
+		Storage.removeItem(storageKey.userInfo);
 	} else {
 		Toast.info('系统出错');
 		throw new Error('server handle error');
@@ -83,7 +89,7 @@ export async function request(uri, type = "GET", data = ""){
 		.then((response) => response.text())
 		.then(filterJSON)
 		.catch(function (error) {
-			console.log("请求出错啦");
+			console.log("请求出错啦1111");
 			console.log(error);
 			//throw error;
 			return false;

@@ -11,25 +11,38 @@ export default {
     namespace: 'gameRules',
 
     state: {
-        rules: [],
     },
 
     subscriptions: {
     },
 
     effects: {
-        *list({callback}, { put }) {
-            let rs = yield sendRequest(api.gameRoles.list);
-            if(rs && rs.err_code == 0 && rs.rules){
-                callback && callback();
-                yield put({ type: 'setList' , rules:rs.rules});
+
+        *roomGameRule({params, callback},) {
+            let rs = yield sendRequest(api.gameRoles.roomGameRule, params);
+            if(rs && rs.err_code == 0){
+                let gameRules = rs.rules;
+                
+                let combineRule = gameRules.filter((rule)=>rule.play_type == 1),
+                    combineRate = JSON.parse(combineRule[0].combine_rates);
+
+                let singleRule = gameRules.filter((rule)=>rule.play_type == 2),
+                    singleRate = singleRule[0].single_point_rates.split('|');
+
+                singleRate.map((rate, index)=>{
+                    singleRate[14+index] = singleRate[13-index];
+                });
+
+                let newSingleRate = [];
+                for(let i = 0,len = singleRate.length; i < len; i += 5){
+                    newSingleRate.push(singleRate.slice(i,i+5));
+                }
+                
+                callback && callback([combineRate, newSingleRate]);
             }
         },
     },
 
     reducers: {
-        setList(state,{rules}) {
-            return {...state,rules}
-        },
     },
 }
