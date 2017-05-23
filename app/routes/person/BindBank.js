@@ -33,6 +33,14 @@ class BindBank extends Component{
         };
     }
 
+    componentWillMount() {
+        const { user: { isSetWithdrawPwd: isSet } } = this.props;
+        if(!isSet){
+            Toast.info('请先进行提现密码设置!!');
+            Actions.pop();
+        }
+    }
+
     handleChange(value,key){
         let params = this.state.params;
         params[key] = value;

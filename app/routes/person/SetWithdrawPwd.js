@@ -18,6 +18,9 @@ import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva';
 import { List, Button, Toast } from 'antd-mobile';
 import Common from '../../common/index';
+import md5 from 'blueimp-md5';
+import {md5Key} from '../../config';
+
 
 class SetWithdrawPwd extends Component{
     // 构造
@@ -26,10 +29,10 @@ class SetWithdrawPwd extends Component{
         this.handleChange = this.handleChange.bind(this);
         // 初始状态
         this.state = {
-            params: {
-                user_id: this.props.user.info.user_id
-            }
-        };
+        }
+    }
+
+    componentWillMount() {
     }
 
     handleChange(value,key){
@@ -40,36 +43,80 @@ class SetWithdrawPwd extends Component{
     }
 
     doSubmit(){
+
+        const { user: { isSetWithdrawPwd: isSet } } = this.props;
+
+        const {withdrawPwd, confirmPwd, oldPwd} = this.state;
+
+        if(isSet && !oldPwd){
+            Toast.info('请输入原提现密码', 2, null, false);
+            return;
+        }
+        if(!withdrawPwd){
+            Toast.info('请输入提现密码', 2, null, false);
+            return;
+        }
+        if(withdrawPwd != confirmPwd){
+            Toast.info('确认密码错误,请重新输入', 2, null, false);
+            return;
+        }
+        let params = {
+            withdrawPwd: md5(md5Key+withdrawPwd)
+        }
+
+        if(isSet){
+            params.oldPwd = md5(md5Key+oldPwd);
+        }
+
         this.props.dispatch({
-            type: 'recharge/doAlipayRecharge',
-            params: this.state.params,
+            type: 'user/setWithdrawPwd',
+            params,
             callback: ()=>{
                 Actions.pop();
-                Toast.info('支付宝转账信息提交成功!');
+                Toast.info('提现密码设置成功!');
+            },
+            errCallback: (rs)=>{
+                if(rs.err_code == 201){
+                    Toast.info('原密码错误,请重新输入', 2, null, false);
+                }
             }
         });
+        
     }
 
     render(){
+
+        const { user: { isSetWithdrawPwd } } = this.props;
+
+        if(isSetWithdrawPwd == undefined) return null;
 
         return (
             <ScrollView style={styles.container}>
                 <View style={{backgroundColor: 'white',marginTop: 20, paddingBottom: 20}}>
                     <View style={styles.accountTitle}>
-                        <Text style={{color: 'white'}}>提现密码</Text>
+                        <Text style={{color: 'white'}}>{isSetWithdrawPwd?'修改提现密码':'设置提现密码'}</Text>
                     </View>
+                    {isSetWithdrawPwd?
+                    <View style={styles.inputView}>
+                        <Text style={styles.inputLabel}>原密码: </Text>
+                        <TextInput
+                            onChangeText={(v)=>{this.setState({oldPwd: v})}}
+                            underlineColorAndroid="transparent" secureTextEntry={true}
+                            style={styles.myInput}/>
+                    </View>:
+                    null}
                     <View style={styles.inputView}>
                         <Text style={styles.inputLabel}>密码: </Text>
                         <TextInput
-                            onChangeText={(v)=>{this.handleChange(v,'account_name')}}
-                            underlineColorAndroid="transparent"
+                            onChangeText={(v)=>{this.setState({withdrawPwd: v})}}
+                            underlineColorAndroid="transparent" secureTextEntry={true}
                             style={styles.myInput}/>
                     </View>
                     <View style={styles.inputView}>
                         <Text style={styles.inputLabel}>确认密码: </Text>
                         <TextInput
-                            onChangeText={(v)=>{this.handleChange(v,'account_name')}}
-                            underlineColorAndroid="transparent"
+                            onChangeText={(v)=>{this.setState({confirmPwd: v})}}
+                            underlineColorAndroid="transparent" secureTextEntry={true}
                             style={styles.myInput}/>
                     </View>
                 </View>

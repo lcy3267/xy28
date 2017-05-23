@@ -43,13 +43,18 @@ class MyBankCard extends Component{
     }
 
     render(){
+
+        const { selectCard } = this.props;
+
         return (
             <View style={styles.container}>
                 <List>
                     {this.state.cards.map((card, index)=>{
                         return (
                             [
-                                <Item key={index}>
+                                <Item key={index}
+                                    {...{arrow: selectCard?"horizontal":'',
+                                        onClick: selectCard?()=>Actions.pop({ refresh: { index }}):null}}>
                                     <View style={{height: 30,justifyContent: 'center',}}>
                                         <Text>{card.bank_name}</Text>
                                     </View>

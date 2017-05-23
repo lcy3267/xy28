@@ -55,7 +55,7 @@ class Wallet extends Component{
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
-                        onClick={() => {}}
+                        onClick={Actions.withdraw}
                     >提现</Item>
                     <Item
                         onClick={() => {}}

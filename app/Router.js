@@ -12,6 +12,7 @@ import SetWithdrawPwd from './routes/person/SetWithdrawPwd';
 import MyBankCard from './routes/person/MyBankCard';
 import SelectAlipayAccount from './routes/recharge/SelectAlipayAccount';
 import AlipayRecharge from './routes/recharge/AlipayRecharge';
+import Withdraw from './routes/withdraw/Withdraw';
 
 const RouterComponent = () => {
   return (
@@ -25,8 +26,9 @@ const RouterComponent = () => {
           {SetScene('alipayRecharge', '支付宝转账', AlipayRecharge)}
           {SetScene('wallet', '钱包', Wallet)}
           {SetScene('bindBank', '设置', BindBank)}
-          {SetScene('setWithdrawPwd', '设置', SetWithdrawPwd)}
+          {SetScene('setWithdrawPwd', '提现密码', SetWithdrawPwd)}
           {SetScene('myBankCard', '银行卡', MyBankCard)}
+          {SetScene('withdraw', '提现', Withdraw)}
           {SetScene('room', '初级房', Room, <Icon
               onPress={()=>alert("Right button")}
               name="md-add" color='white' size={25}/>,false)}

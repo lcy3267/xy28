@@ -30,6 +30,16 @@ class Home extends Component{
     }
 
     componentWillMount() {
+        this.props.dispatch({
+            type: 'user/queryWithdrawPwd',
+            callback: (rs)=>{
+                if(rs != 'error'){
+                    this.setState({isSet: true});
+                }else{
+                    this.setState({isSet: false});
+                }
+            }
+        });
     }
 
     onChangeTab(){}

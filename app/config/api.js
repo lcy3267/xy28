@@ -5,6 +5,10 @@ export default  {
 		login: 'POST /users/login',
 		bindBank: 'POST /users/bindBank',
 		getBankCards: 'GET /users/bankCards',
+		queryWithdrawPwd: 'GET /users/queryWithdrawPwd',
+		setWithdrawPwd: 'PUT /users/setWithdrawPwd',
+		withdraw: 'POST /users/withdraw',
+		getUserInfo: 'GET /users/getUserInfo',
 	},
 	gameRoles: {
 		list: 'GET /gameRules/list',
