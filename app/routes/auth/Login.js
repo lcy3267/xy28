@@ -37,10 +37,8 @@ class Login extends Component{
                     account: value.account,
                     password: md5(md5Key+value.password)
                 }
-                dispatch({type:'user/login',params,callback: (rs)=>{
-                    if(rs == 'error'){
-                        Toast.info('账号或者密码错误');
-                    }
+                dispatch({type:'user/login',params,errCallback: (rs)=>{
+                    Toast.info('账号或者密码错误');
                 }})
             }else{
                 Toast.info('请将注册信息填写完整', 1);

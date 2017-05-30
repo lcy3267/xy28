@@ -17,7 +17,7 @@ import {
 import SocketIOClient from "socket.io-client";
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
-import { Carousel, Button, Popup, Grid, Toast, Tabs } from 'antd-mobile';
+import { Carousel, Button, Popup, Grid, Toast, Tabs, Modal } from 'antd-mobile';
 import Common from '../common/index';
 import config,{ combineRates } from '../config';
 import { formatDate, GetDateStr } from '../common/FormatUtil'
@@ -53,8 +53,9 @@ class Room extends Component{
             lottery: {}, //上期开奖
             integral: 0,
             overTimes: null,
-            messages: [],//type: 0 用户发言, -1:系统消息, 1~10:下注
+            messages: [],//type: 0 用户发言, -1:系统消息, string:下注
             opening: false,
+            cancelBets: [],//用户取消下注的序号
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
             }),
@@ -72,7 +73,7 @@ class Room extends Component{
         Toast.loading('加载中...',15);
 
         //加载5条下注记录
-        dispatch({type: 'bet/records'});
+        //dispatch({type: 'bet/records'});
 
         //加载赔率规则
         this.loadRoomGameRules();
@@ -124,10 +125,30 @@ class Room extends Component{
 
         });
 
+        this.socket.on('systemMsg', (data) => {
+            const {content} = data;
+            let messages = this.state.messages;
+            let sysMsg = {
+                type: -1,
+                content,
+            }
+            messages.push(sysMsg);
+            this.setState({messages});
+
+        });
+
         // 监听开奖结果
-        this.socket.on('openResult', (result) => {
-            const lottery = result.lotteryRs;
-            this.setState({lottery, serial_number: +lottery.serial_number});
+        this.socket.on('openResult', (data) => {
+            const lottery = data.lotteryRs;
+            const {one, two, third, sum, serial_number} = lottery;
+            let result = `${one} + ${two} + ${third} = ${sum} `;
+            let messages = this.state.messages;
+            let sysMsg = {
+                type: -1,
+                content: `[${serial_number}]期已开奖,开奖结果为:[${result}],[${(+serial_number)+1}]期可以开始下注`,
+            }
+            messages.push(sysMsg);
+            this.setState({messages, lottery, serial_number: +serial_number});
         });
 
         this.socket.on('updateStatus', (result) => {
@@ -138,10 +159,8 @@ class Room extends Component{
         });
 
         this.socket.on('updateIntegral', (data)=>{
-            this.setState({integral: data.integral});
-            if(data.winIntegral){
-                this.setState({winIntegral: data.winIntegral});
-            }
+            const {integral, winIntegral} = data;
+            this.setState({integral, winIntegral});
         });
 
         //监听赔率变动
@@ -217,7 +236,13 @@ class Room extends Component{
 
     //下注
     bottomPour(betType, betMoney, playType){
-        if(!betType){
+
+        if(this.state.integral < betMoney){
+            showToastNoMask('余额不足!');
+            return;
+        }
+
+        if(!betType && betType != 0){
             alert('请选择下注类型');
             return false
         };
@@ -225,6 +250,9 @@ class Room extends Component{
             alert('请输入下注金额');
             return false;
         };
+
+
+
         this.doBottomPour({betType, betMoney, playType});
         Popup.hide();
     }
@@ -232,6 +260,7 @@ class Room extends Component{
     //下注
     doBottomPour({betType,betMoney,playType}){
         if(this.state.opening) return;
+
         let {user: {info}} = this.props;
         var bet = {
             user: getSendUser(info),
@@ -241,6 +270,12 @@ class Room extends Component{
             number: playType == 2 ? betType : null,
             serial_number: this.state.serial_number+1
         };
+        //防止重复点击
+        if(this.beting == true) return;
+        this.beting = true;
+        setTimeout(()=>{
+            this.beting = false;
+        },1000);
         this.socket.emit('bet', bet);
     }
 
@@ -262,6 +297,38 @@ class Room extends Component{
             this.socket.emit('msg', {msg: item});
             this.setState({text: null});
         }
+    }
+
+    cancelBet = (bet, cancelIndex)=>{
+
+        let cancel = ()=>{
+            if(this.state.opening){
+                showToastNoMask('已封盘不能取消!');
+                return;
+            }
+            if(bet.serial_number != this.state.serial_number+1){
+                showToastNoMask('不能取消往期投注!');
+                return;
+            }
+            this.props.dispatch({
+                type: 'bet/cancelBet',
+                params: {id: bet.id},
+                callback: ()=>{
+                    let cancelBets = this.state.cancelBets;
+                    cancelBets.push(cancelIndex);
+                    this.setState({cancelBets});
+                    showToastNoMask('成功取消下注!');
+                }
+            })
+        }
+
+        Modal.alert('','确定取消下注吗?',
+            [
+                { text: '点错了', onPress: () => console.log('cancel')},
+                { text: '取消下注', onPress: () => cancel()},
+            ]
+        )
+
     }
 
     render(){
@@ -297,6 +364,7 @@ class Room extends Component{
                                style={{height: 35, backgroundColor: 'white', width: '100%'}}
                                onChangeText={(text) => this.setState({text})}
                                onSubmitEditing={this.sendMessage.bind(this)}
+                               underlineColorAndroid="transparent"
                                value={this.state.text}
                             />
                        </View>
@@ -346,7 +414,8 @@ class Room extends Component{
         );
     }
 
-    _renderRow(item){
+    //type: 0 用户发言, -1:系统消息, string:下注
+    _renderRow(item, sectionID, rowID){
         let {user} = this.props;
         let content = null;
         if(item.type == 0){
@@ -354,7 +423,7 @@ class Room extends Component{
         }else if(item.type == -1){
             content = this.systemMessageView(item.content);
         }else{
-            content = item.user.user_id !== user.info.user_id?this.leftBetMessageView(item):this.rightBetMessageView(item)
+            content = item.user.user_id !== user.info.user_id?this.leftBetMessageView(item):this.rightBetMessageView(item, rowID)
         }
         return(
             <View onLayout={()=>{
@@ -368,8 +437,9 @@ class Room extends Component{
     systemMessageView(content){
         return (
             <View style={{width: '100%', alignItems: 'center'}}>
-                <View style={{backgroundColor: '#DEDEDE', marginVertical: 8, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 4}}>
-                    <Text style={{color: 'black'}}>{content}</Text>
+                <View style={{maxWidth: '75%', backgroundColor: '#DEDEDE',
+                 marginVertical: 8, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4}}>
+                    <Text style={{fontSize: 12,color: 'black', lineHeight: 20}}>{content}</Text>
                 </View>
             </View>
         )
@@ -396,6 +466,8 @@ class Room extends Component{
     }
 
     rightMessageView(item){
+        
+        
         return (
             <View style={[styles.item,{justifyContent:'flex-end'}]}>
                 <View style={{flexDirection: 'column', marginLeft: 110}}>
@@ -418,9 +490,7 @@ class Room extends Component{
 
     leftBetMessageView(bet){
 
-        console.log(bet);
-
-        let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : `单点(${bet.number})`;
+        let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
 
         return (
             <View style={styles.item}>
@@ -451,14 +521,16 @@ class Room extends Component{
         )
     }
 
-    rightBetMessageView(bet){
+    rightBetMessageView(bet, rowID){
 
+        if(this.state.cancelBets.indexOf(rowID) > -1) return null;
 
         let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
-
+        
         return (
             <View style={[styles.item,{justifyContent:'flex-end'}]}>
-                <View style={styles.itemContentView}>
+                <TouchableOpacity activeOpacity={1}  onPress={()=>{this.cancelBet(bet, rowID)}}
+                    style={styles.itemContentView}>
                     <View style={{flexDirection: 'column',width: 220}}>
                         <View style={{height: 15}}>
                             <Text style={{fontSize: 12, textAlign: 'right'}}>{bet.user.name}</Text>
@@ -482,7 +554,7 @@ class Room extends Component{
                             <Image style={styles.itemImage} source={require('../asset/level_1.jpg')}/>
                         </TouchableOpacity>
                     </View>
-                </View>
+                </TouchableOpacity>
             </View>
         )
     }
@@ -578,7 +650,7 @@ class PopupContent extends Component {
         });
 
         return (
-            <View style={{backgroundColor: '#48B0FF', paddingBottom:this.state.hasPosition?220:0}}>
+            <View style={{backgroundColor: '#48B0FF', paddingBottom:this.state.hasPosition && Platform.OS == 'ios'?220:0}}>
                 <View style={[{flexDirection: 'row',height: 50},centerStyle]}>
                     <Icon onPress={()=>{this.tabMove(1)}} name='md-arrow-dropleft' size={30} style={{color: 'white'}}/>
                     <Text style={{color: 'white', marginLeft: 100, marginRight: 100}}>大小单双</Text>
@@ -618,8 +690,9 @@ class PopupContent extends Component {
                         onBlur={this.updatePosition.bind(this,false)}
                         keyboardType="numeric"
                         value={this.state.betMoney}
+                        underlineColorAndroid="transparent"
                         onChangeText={this.moneyChange}
-                        style={{width: '50%',backgroundColor: 'white',height: 30}}/>
+                        style={{width: '50%',backgroundColor: 'white',height: 35}}/>
                     <Button
                         onClick={this.bottomPour.bind(this)}
                         size="small" style={[styles.ruleButton,{backgroundColor: 'red',width: 60,borderWidth: 0}]}>
@@ -639,12 +712,14 @@ function getSendUser(info) {
     }
 }
 
+const {window} = Common;
+
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
+        width: window.width,
         height: pageHeight,
         flexDirection: 'column',
-        paddingTop: 64,
+        paddingTop: window.paddingTop,
     },
     card: {
         flex: 1,

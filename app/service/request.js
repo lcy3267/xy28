@@ -20,7 +20,7 @@ function filterStatus(res) {
 		Toast.info('无操作权限');
 		throw new Error('Forbidden 403');
 	}else if(res.status == 401){
-		Toast.info('丢失登录态,请重新登录');
+		//Toast.info('丢失登录态,请重新登录');
 		Storage.removeItem(storageKey.userInfo);
 	} else {
 		Toast.info('系统出错');

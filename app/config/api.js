@@ -5,14 +5,24 @@ export default  {
 		login: 'POST /users/login',
 		bindBank: 'POST /users/bindBank',
 		getBankCards: 'GET /users/bankCards',
-		queryWithdrawPwd: 'GET /users/queryWithdrawPwd',
-		setWithdrawPwd: 'PUT /users/setWithdrawPwd',
-		withdraw: 'POST /users/withdraw',
 		getUserInfo: 'GET /users/getUserInfo',
+	},
+	withdraw: {
+		queryWithdrawPwd: 'GET /withdraw/queryWithdrawPwd',
+		setWithdrawPwd: 'PUT /withdraw/setWithdrawPwd',
+		withdraw: 'POST /withdraw/withdraw',
+		userWithDrawRecord: 'GET /withdraw/userWithDrawRecord',
 	},
 	gameRoles: {
 		list: 'GET /gameRules/list',
 		roomGameRule: 'GET /gameRules/roomGameRule',
+	},
+	bet: {
+		records: 'GET /bet/records',
+		cancelBet: 'PUT /bet/cancelBet',
+		userRecords: 'PUT /bet/userRecords',
+		integralChangeRecords: 'GET /bet/integralChangeRecords',
+		userBetRecords: 'GET /bet/userBetRecords',
 	},
 	recharge: {
 		getCollectionAccounts: 'GET /recharge/getCollectionAccounts',
@@ -21,8 +31,8 @@ export default  {
 	rooms: {
 		getRooms: 'GET /system/rooms',
 	},
-	bet: {
-		getCollectionAccounts: 'GET /recharge/getCollectionAccounts',
-		doAlipayRecharge: 'POST /recharge/alipayRecharge',
-	},
+	message: {
+		systemList: 'GET /message/systemList',
+		detail: 'GET /message/detail'
+	}
 }

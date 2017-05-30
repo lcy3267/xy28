@@ -112,15 +112,15 @@ class RoomList extends Component{
         )
     }
 }
-
-const pageHeight = Common.window.height - 50;
+const {height, width, paddingTop} = Common.window;
+const pageHeight = height - 50;
 
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
+        width: width,
         height: pageHeight,
         flexDirection: 'column',
-        paddingTop: 65,
+        paddingTop: paddingTop,
     },
     card: {
         flex: 1,

@@ -102,16 +102,15 @@ class AlipayRecharge extends Component{
         )
     }
 }
+const {height, width, paddingTop} = Common.window;
 
-const pageHeight = Common.window.height;
-const pageWidth = Common.window.width;
 
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
-        height: pageHeight,
+        width: width,
+        height: height,
         backgroundColor: '#F5F5F9',
-        paddingTop: 64,
+        paddingTop: paddingTop,
     },
     bottomView: {
         flex: 1, height: 60,
@@ -125,8 +124,8 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         backgroundColor: '#7EB6EE',
         height: 24,
-        top: -10,
-        left: (pageWidth-100)/2,
+        zIndex: 999,
+        left: (width-100)/2,
     },
     accountInfo: {
         height: 30,
@@ -134,7 +133,7 @@ const styles = StyleSheet.create({
         marginLeft: 20,
     },
     myInput: {
-        width: pageWidth - 30,
+        width: width - 30,
         height: 35,
         backgroundColor: 'white',
         padding: 0,
@@ -157,7 +156,7 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     commitButton:{
-        width: pageWidth-100,
+        width: width-100,
         marginLeft: 50,
         marginTop: 20,
     }

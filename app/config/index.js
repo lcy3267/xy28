@@ -43,4 +43,8 @@ export const combineRates = {
 	min: '极小'
 }
 
+export const changeType = ['投注','中奖','充值','提现','回水','充值','拒绝提现','取消下注'];
+
+export const withdrawType = ['提现中','已提现','拒绝提现'];
+
 export const formatRules = ['大','小','单','双','大单','大双','小单','小双','极大','极小'];

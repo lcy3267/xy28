@@ -64,7 +64,7 @@ class Wallet extends Component{
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
-                        onClick={() => {}}
+                        onClick={Actions.withdrawRecord}
                     >提现记录</Item>
                 </List>
             </View>
@@ -72,13 +72,13 @@ class Wallet extends Component{
     }
 }
 
-const pageHeight = Common.window.height;
+const {height, width, paddingTop} = Common.window;
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 65,
-        width: Common.window.width,
-        height: pageHeight,
+        paddingTop: paddingTop,
+        width: width,
+        height: height,
         backgroundColor: '#F5F5F9'
     },
 });

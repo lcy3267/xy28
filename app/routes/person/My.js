@@ -30,7 +30,7 @@ class My extends Component{
 
     render(){
 
-        let {user} = this.props;
+        let {user: {info}} = this.props;
 
         return (
             <View style={styles.container}>
@@ -41,7 +41,7 @@ class My extends Component{
                         />
                     </View>
                     <View style={{flex: 3,justifyContent: 'center'}}>
-                        <Text>{user.info.name}</Text>
+                        <Text>{info.name}</Text>
                     </View>
                 </View>
                 <List>
@@ -49,6 +49,7 @@ class My extends Component{
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
                         onClick={Actions.wallet}
+                        extra={<Text style={{fontSize: 13,color: '#3399FF'}}>{info.integral+' 元宝'}</Text>}
                     >钱包</Item>
                     <Item
                         onClick={() => {}}
@@ -57,10 +58,10 @@ class My extends Component{
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
-                        onClick={() => {}}
+                        onClick={Actions.changeRecords}
                     >账变记录</Item>
                     <Item
-                        onClick={() => {}}
+                        onClick={Actions.betRecord}
                         thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
                     >游戏记录</Item>
                     <Item

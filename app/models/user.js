@@ -24,7 +24,7 @@ export default {
     },
 
     effects: {
-        *register({params,callback}, { put }) {
+        *register({params, callback, errCallback}, { put }) {
             let rs = yield sendRequest(api.user.register, params);
             if(rs && rs.err_code == 0){
                 let info = rs.user;
@@ -34,16 +34,22 @@ export default {
                 yield put({ type: 'bindUser' , info});
             }
         },
-        *storageLogin({key},{put}){
+        *storageLogin({key, callback},{put}){
             let info = yield Storage.getItem(storageKey.userInfo);
             if(info){
                 const account = info.account;
                 const password = info.password;
-                yield put({type: 'login', params: {account, password}});
+                yield put({
+                    type: 'login',
+                    params: {account, password},
+                    errCallback: ()=>{
+                        Storage.clear(storageKey.userInfo);
+                    }
+                });
+                callback && callback();
             }
         },
-        *login({params,callback},{put}){
-            console.log('123----')
+        *login({params, callback, errCallback},{put}){
             let rs = yield sendRequest(api.user.login, params);
             if(rs && rs.err_code == 0){
                 let info = rs.user;
@@ -52,8 +58,10 @@ export default {
                 Storage.setItem(storageKey.token, rs.token);
                 callback && callback(rs.user);
                 yield put({ type: 'bindUser' , info});
+                yield put({type: 'queryWithdrawPwd'});
             }else{
-                callback && callback('error');
+                yield put({ type: 'bindUser' , null});
+                errCallback && errCallback(rs);
             }
         },
         *loginOut({callback},{put}){
@@ -68,12 +76,12 @@ export default {
                 yield put({ type: 'bindUser' , info});
             }
         },
-        *bindBank({params, callback},{put}){
+        *bindBank({params, callback, errCallback},{put}){
             let rs = yield sendRequest(api.user.bindBank,params);
             if(rs && rs.err_code == 0){
                 callback && callback(rs.user);
             }else{
-                callback('error');
+                errCallback && errCallback(rs);
             }
         },
         *getBankCards({callback}){
@@ -85,15 +93,17 @@ export default {
             }
         },
         *queryWithdrawPwd({callback},{put}){
-            let rs = yield sendRequest(api.user.queryWithdrawPwd);
+            let rs = yield sendRequest(api.withdraw.queryWithdrawPwd);
             if(rs && rs.err_code == 0){
                 yield put({type: 'isSetWithdrawPwd', isSetWithdrawPwd: true});
+            }else if(rs.err_code == 401){
+                yield put({type: 'storageLogin'});
             }else{
                 yield put({type: 'isSetWithdrawPwd', isSetWithdrawPwd: false});
             }
         },
         *setWithdrawPwd({params, callback, errCallback},{put}){
-            let rs = yield sendRequest(api.user.setWithdrawPwd, params);
+            let rs = yield sendRequest(api.withdraw.setWithdrawPwd, params);
             if(rs && rs.err_code == 0){
                 callback && callback();
                 yield put({type: 'isSetWithdrawPwd', isSetWithdrawPwd: true});
@@ -102,7 +112,7 @@ export default {
             }
         },
         *withdraw({params, callback, errCallback}){
-            let rs = yield sendRequest(api.user.withdraw, params);
+            let rs = yield sendRequest(api.withdraw.withdraw, params);
             if(rs && rs.err_code == 0){
                 callback && callback();
             }else{

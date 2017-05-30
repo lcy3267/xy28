@@ -59,6 +59,11 @@ export const formatDate =  (date,fmt) => {
   return fmt;
 };
 
+export const getDate = (date)=>{
+  date = new Date(date);
+  return formatDate(date,'yyyy-MM-dd hh:mm');
+}
+
 
 export const formatAgreedDate = (date) =>{
   let a = date.split(" ");

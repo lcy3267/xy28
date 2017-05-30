@@ -11,10 +11,15 @@ import {
     TextInput,
     Image,
 } from 'react-native';
+import md5 from 'blueimp-md5';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva';
-import { List, Button, Toast, Picker } from 'antd-mobile';
+import { List, Button, Picker } from 'antd-mobile';
 import Common from '../../common/index';
+import {md5Key} from '../../config';
+
+
+const {window, myToast} = Common;
 
 class BindBank extends Component{
     // 构造
@@ -36,7 +41,7 @@ class BindBank extends Component{
     componentWillMount() {
         const { user: { isSetWithdrawPwd: isSet } } = this.props;
         if(!isSet){
-            Toast.info('请先进行提现密码设置!!');
+            myToast('请先进行提现密码设置!!');
             Actions.pop();
         }
     }
@@ -52,19 +57,25 @@ class BindBank extends Component{
         let params = this.state.params;
         for(let k of Object.keys(params)) {
             if(!params[k]) {
-                Toast.info('请将信息补充完整!!');
+                myToast('请将信息补充完整!!');
                 isOk = false;
                 break;
             };
         }
+        params.password = md5(md5Key+params.password);
         if(isOk){
             this.props.dispatch({
                 type: 'user/bindBank',
                 params,
                 callback: (rs)=>{
                     if(rs !== 'error'){
-                        Toast.info('银行卡信息已提交!!');
+                        myToast('银行卡信息绑定成功!!',3);
                         Actions.pop();
+                    }
+                },
+                errCallback: (rs)=>{
+                    if(rs.err_code == 5003){
+                        myToast('提现密码错误!!');
                     }
                 }
             });
@@ -141,6 +152,7 @@ class BindBank extends Component{
                         <TextInput
                             onChangeText={(v)=>{this.handleChange(v,'password')}}
                             underlineColorAndroid="transparent"
+                            secureTextEntry={true}
                             style={styles.myInput}/>
                     </View>
                 </View>
@@ -154,15 +166,14 @@ class BindBank extends Component{
     }
 }
 
-const pageHeight = Common.window.height;
-const pageWidth = Common.window.width;
+const {height, width, paddingTop} = Common.window;
 
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
-        height: pageHeight,
+        width: width,
+        height: height,
         backgroundColor: '#F5F5F9',
-        paddingTop: 64,
+        paddingTop: paddingTop,
     },
     bottomView: {
         flex: 1, height: 60,
@@ -176,8 +187,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         backgroundColor: '#7EB6EE',
         height: 24,
-        top: -10,
-        left: (pageWidth-100)/2,
+        left: (width-100)/2,
     },
     accountInfo: {
         height: 30,
@@ -185,7 +195,7 @@ const styles = StyleSheet.create({
         marginLeft: 20,
     },
     myInput: {
-        width: pageWidth - 30,
+        width: width - 30,
         height: 35,
         backgroundColor: 'white',
         padding: 0,
@@ -208,7 +218,7 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     commitButton:{
-        width: pageWidth-100,
+        width: width-100,
         marginLeft: 50,
         marginTop: 20,
     }

@@ -5,7 +5,7 @@ import ScrollableTabView from 'react-native-scrollable-tab-view';
 import MyTabBar from '../components/MyTabBar';
 import Index from './Index';
 import Recharge from './recharge/Recharge';
-import Message from './Message';
+import Message from './message/Message';
 import My from './person/My';
 import Login from './auth/Login';
 import Common from '../common/index';
@@ -38,11 +38,26 @@ class Home extends Component{
                 }else{
                     this.setState({isSet: false});
                 }
+            },
+            errCallback:()=>{
+                
             }
         });
     }
 
-    onChangeTab(){}
+    onChangeTab = (key)=>{
+        const { i } = key;
+        if(i  == 3){
+            this.props.dispatch({type: 'user/getUserInfo'});
+        }else if(i == 2){
+            this.props.dispatch({
+                type: 'message/systemList',
+                params: {
+                    pageIndex: 1,
+                },
+            });
+        }
+    }
 
     render() {
         let {user} = this.props;
@@ -56,7 +71,7 @@ class Home extends Component{
                     initialPage={0}
                     renderTabBar={() => <MyTabBar tabBarItems={tabBarItems} hasTimelineMassage={false}  hasNewMassage={true}/>}
                     tabBarPosition="bottom"
-                    onChangeTab={this.onChangeTab.bind(this)}
+                    onChangeTab={this.onChangeTab}
                     locked={true}
                 >
                     {
@@ -85,7 +100,7 @@ class Home extends Component{
 const styles = StyleSheet.create({
     container: {
         width: Common.window.width,
-        height: Platform.OS == 'ios'?Common.window.height:Common.window.height
+        height: Common.window.height
     },
     main: {
     },

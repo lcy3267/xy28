@@ -49,14 +49,14 @@ class SelectAlipayAccount extends Component{
     }
 }
 
-const pageHeight = Common.window.height;
+const {height, width, paddingTop} = Common.window;
 
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
-        height: pageHeight,
+        width: width,
+        height: height,
         backgroundColor: '#F5F5F9',
-        paddingTop: 64,
+        paddingTop: paddingTop,
     },
     bottomView: {
         flex: 1, height: 60,

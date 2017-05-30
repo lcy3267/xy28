@@ -1,9 +1,3 @@
-/**
- * Created by chengyuan on 2017/3/11.
- */
-/**
- * Created by chengyuan on 2017/3/5.
- */
 import api from '../config/api';
 import {sendRequest} from '../service/request';
 
@@ -19,10 +13,18 @@ export default {
 
     effects: {
         *records({callback}, { put }) {
-            let rs = yield sendRequest(api.gameRoles.list);
+            let rs = yield sendRequest(api.bet.records);
             if(rs && rs.err_code == 0 && rs.rules){
                 callback && callback();
                 yield put({ type: 'setList' , rules:rs.rules});
+            }
+        },
+        *cancelBet({params, callback, errCallback}){
+            let rs = yield sendRequest(api.bet.cancelBet,params);
+            if(rs && rs.err_code == 0 ){
+                callback && callback();
+            }else{
+                errCallback && errCallback(rs);
             }
         },
     },
