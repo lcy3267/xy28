@@ -30,6 +30,7 @@ export default  {
 	},
 	rooms: {
 		getRooms: 'GET /system/rooms',
+		getRoomInfo: 'GET /system/roomInfo',
 	},
 	message: {
 		systemList: 'GET /message/systemList',

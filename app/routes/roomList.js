@@ -71,7 +71,7 @@ class RoomList extends Component{
 
     joinRoom(room){
 
-        const {room_type, title, id, is_speak, status} = room;
+        const {room_type, title, id, status} = room;
 
         if(status == -1) {
             Toast.info('该房间已暂时关闭,请进入其他房间进行游戏', 4);
@@ -80,7 +80,7 @@ class RoomList extends Component{
 
         const str = room_type == 1 ? '北京' : '加拿大';
 
-        Actions.room({title: str+title,roomId: id, roomType: room_type, isSpeak: is_speak});
+        Actions.room({title: str+title, roomId: id});
     }
 
     render(){

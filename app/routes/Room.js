@@ -41,16 +41,23 @@ class Room extends Component{
         this.doBottomPour = this.doBottomPour.bind(this);
         this.loadRoomGameRules = this.loadRoomGameRules.bind(this);
 
-        let {roomId, roomType, isSpeak} = this.props;
+        let {roomId} = this.props;
 
         this.roomId = roomId;
+        /*this.roomLevel = roomLevel;
         this.roomType = roomType;
         //是否允许发言
-        this.is_speak = isSpeak;
+        this.is_speak = isSpeak;*/
 
         // 初始状态
         this.state = {
-            lottery: {}, //上期开奖
+            room: {
+                room_type: 0,
+                is_speak: 0,
+                level: 0,
+            },
+            lottery: {
+            }, //上期开奖
             integral: 0,
             overTimes: null,
             messages: [],//type: 0 用户发言, -1:系统消息, string:下注
@@ -63,7 +70,7 @@ class Room extends Component{
     }
 
     componentWillMount() {
-        let {user, dispatch, is_speak} = this.props;
+        let {user, dispatch} = this.props;
         if(!user.info){
             showToastNoMask('请先进行登录');
             Actions.pop();
@@ -75,111 +82,132 @@ class Room extends Component{
         //加载5条下注记录
         //dispatch({type: 'bet/records'});
 
-        //加载赔率规则
-        this.loadRoomGameRules();
+        this.loadRoomInfo(()=>{
+            //加载赔率规则
+            this.loadRoomGameRules();
 
-        const namespace = this.roomType == 1?'/bj':'/cnd';
+            const namespace = this.state.room.room_type == 1?'/bj':'/cnd';
 
-        //链接房间
-        this.socket = SocketIOClient(config.apiDomain+namespace, {jsonp: false});
-
-        let login = ()=>{
-            this.socket.emit("login", {user: user.info,roomId: this.roomId, roomType: this.roomType});
-        }
-        login();
-
-        //监听用户加入房间
-        this.socket.on('login', (data) => {
-            Toast.hide();
-            let {joinUser, lotteryRs, integral, opening} = data;
-            if(joinUser.user_id == user.info.user_id){
-                let serial_number = +lotteryRs.serial_number;
-                this.setState({lottery: lotteryRs, serial_number, integral, opening},()=>{
-                    Toast.hide();
-                });
+            //链接房间
+            this.socket = SocketIOClient(config.apiDomain+namespace, {jsonp: false});
+            
+            let login = ()=>{
+                this.socket.emit("login",
+                    {
+                        user: user.info,
+                        roomId: this.roomId,
+                        roomLevel: this.state.room.level,
+                        roomType: this.state.room.room_type
+                    }
+                );
             }
-        });
+            login();
 
-        // 监听下注信息
-        this.socket.on('bet', (result) => {
-            let messages = this.state.messages;
-            messages.push(result.bet);
-            this.setState({messages});
-        });
+            //监听用户加入房间
+            this.socket.on('login', (data) => {
+                Toast.hide();
+                let {joinUser, lotteryRs, integral, opening} = data;
+                if(joinUser.user_id == user.info.user_id){
+                    let serial_number = +lotteryRs.serial_number;
+                    this.setState({lottery: lotteryRs, serial_number, integral, opening},()=>{
+                        Toast.hide();
+                    });
+                }
+            });
 
-        // 监听聊天
-        this.socket.on('msg', (result) => {
-            const {msg} = result;
-            let messages = this.state.messages;
-            if(msg.err_code == 0){
-                messages.push(msg);
+            // 监听下注信息
+            this.socket.on('bet', (result) => {
+                let messages = this.state.messages;
+                messages.push(result.bet);
+                this.setState({messages});
+            });
 
-            }else if(msg.err_code == -1){
+            // 监听聊天
+            this.socket.on('msg', (result) => {
+                const {msg} = result;
+                let messages = this.state.messages;
+                if(msg.err_code == 0){
+                    messages.push(msg);
+
+                }else if(msg.err_code == -1){
+                    let sysMsg = {
+                        type: -1,
+                        content: '您已经被管理员禁言'
+                    }
+                    messages.push(sysMsg);
+                }
+                this.setState({messages});
+
+            });
+
+            this.socket.on('systemMsg', (data) => {
+                const {content} = data;
+                let messages = this.state.messages;
                 let sysMsg = {
                     type: -1,
-                    content: '您已经被管理员禁言'
+                    content,
                 }
                 messages.push(sysMsg);
+                this.setState({messages});
+
+            });
+
+            // 监听开奖结果
+            this.socket.on('openResult', (data) => {
+                const lottery = data.lotteryRs;
+                const {one, two, third, sum, serial_number} = lottery;
+                let result = `${one} + ${two} + ${third} = ${sum} `;
+                let messages = this.state.messages;
+                let sysMsg = {
+                    type: -1,
+                    content: `[${serial_number}]期已开奖,开奖结果为:[${result}],[${(+serial_number)+1}]期可以开始下注`,
+                }
+                messages.push(sysMsg);
+                this.setState({messages, lottery, serial_number: +serial_number});
+            });
+
+            this.socket.on('updateStatus', (result) => {
+                let time = result.time;
+                let minute = Math.floor(time/60);
+                let second = time%60;
+                this.setState({opening: result.opening, overTimes: {minute, second}});
+            });
+
+            this.socket.on('updateIntegral', (data)=>{
+                const {integral, winIntegral} = data;
+                this.setState({integral, winIntegral});
+            });
+
+            //监听赔率变动
+            this.socket.on('updateRules', (rule)=>{
+                Toast.info('管理修改了赔率设置!!', 4);
+                dispatch({type: 'gameRules/list'});
+            });
+
+            //心跳包
+            this.palpitationTimer = setInterval(()=>{
+                this.socket.emit("palpitation");
+            },2000);
+
+            this.socket.on('palpitation', (data)=>{
+                let { result } = data;
+                if(result != 'success'){
+                    login();
+                }
+            });
+        });
+    }
+
+    loadRoomInfo = (callback)=>{
+        this.props.dispatch({
+            type: 'rooms/getRoomInfo',
+            params: { roomId: this.roomId },
+            callback: (room)=>{
+                this.setState({room},()=>{
+                    callback && callback();
+                });
             }
-            this.setState({messages});
-
-        });
-
-        this.socket.on('systemMsg', (data) => {
-            const {content} = data;
-            let messages = this.state.messages;
-            let sysMsg = {
-                type: -1,
-                content,
-            }
-            messages.push(sysMsg);
-            this.setState({messages});
-
-        });
-
-        // 监听开奖结果
-        this.socket.on('openResult', (data) => {
-            const lottery = data.lotteryRs;
-            const {one, two, third, sum, serial_number} = lottery;
-            let result = `${one} + ${two} + ${third} = ${sum} `;
-            let messages = this.state.messages;
-            let sysMsg = {
-                type: -1,
-                content: `[${serial_number}]期已开奖,开奖结果为:[${result}],[${(+serial_number)+1}]期可以开始下注`,
-            }
-            messages.push(sysMsg);
-            this.setState({messages, lottery, serial_number: +serial_number});
-        });
-
-        this.socket.on('updateStatus', (result) => {
-            let time = result.time;
-            let minute = Math.floor(time/60);
-            let second = time%60;
-            this.setState({opening: result.opening, overTimes: {minute, second}});
-        });
-
-        this.socket.on('updateIntegral', (data)=>{
-            const {integral, winIntegral} = data;
-            this.setState({integral, winIntegral});
-        });
-
-        //监听赔率变动
-        this.socket.on('updateRules', (rule)=>{
-            Toast.info('管理修改了赔率设置!!', 4);
-            dispatch({type: 'gameRules/list'});
-        });
-
-        //心跳包
-        this.palpitationTimer = setInterval(()=>{
-            this.socket.emit("palpitation");
-        },2000);
-
-        this.socket.on('palpitation', (data)=>{
-            let { result } = data;
-            if(result != 'success'){
-                login();
-            }
-        });
+        })
     }
 
     loadRoomGameRules(){
@@ -251,8 +279,6 @@ class Room extends Component{
             return false;
         };
 
-
-
         this.doBottomPour({betType, betMoney, playType});
         Popup.hide();
     }
@@ -281,7 +307,7 @@ class Room extends Component{
 
     sendMessage(e){
 
-        if(this.is_speak == -1) {
+        if(this.state.room.is_speak == -1) {
             showToastNoMask('该房间已被禁言!');
             return;
         }

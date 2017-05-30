@@ -31,6 +31,7 @@ export const storageKey = {
 };
 
 export const combineRates = {
+	point: '单点',
 	big: '大',
 	small: '小',
 	single: '单',
