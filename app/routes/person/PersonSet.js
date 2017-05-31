@@ -38,7 +38,7 @@ class PersonSet extends Component{
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
-                        onClick={Actions.setWithdrawPwd}
+                        onClick={Actions.setLoginPwd}
                     >修改密码</Item>
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"

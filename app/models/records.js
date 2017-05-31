@@ -39,6 +39,14 @@ export default {
                 errCallback && errCallback(rs);
             }
         },
+        *userRollbackRecords({params, callback, errCallback}){
+            let rs = yield sendRequest(api.rollback.userRollbackRecords, params);
+            if(rs && rs.err_code == 0 ){
+                callback && callback(rs.records);
+            }else{
+                errCallback && errCallback(rs);
+            }
+        },
     },
 
     reducers: {

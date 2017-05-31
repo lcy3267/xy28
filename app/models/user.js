@@ -111,6 +111,23 @@ export default {
                 errCallback && errCallback(rs);
             }
         },
+        *updateLoginPwd({params, callback, errCallback},{put}){
+            let rs = yield sendRequest(api.withdraw.updateLoginPwd, params);
+            if(rs && rs.err_code == 0){
+                let info = yield Storage.getItem(storageKey.userInfo);
+                if(info){
+                    const account = info.account;
+                    const password = params.pwd;
+                    yield put({
+                        type: 'login',
+                        params: {account, password},
+                    });
+                    callback && callback(rs);
+                }
+            }else{
+                errCallback && errCallback(rs);
+            }
+        },
         *withdraw({params, callback, errCallback}){
             let rs = yield sendRequest(api.withdraw.withdraw, params);
             if(rs && rs.err_code == 0){

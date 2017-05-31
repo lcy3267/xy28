@@ -52,7 +52,7 @@ class My extends Component{
                         extra={<Text style={{fontSize: 13,color: '#3399FF'}}>{info.integral+' 元宝'}</Text>}
                     >钱包</Item>
                     <Item
-                        onClick={() => {}}
+                        onClick={Actions.rollbackRecord}
                         thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
                     >我的回水</Item>
                     <Item

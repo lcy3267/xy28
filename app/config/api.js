@@ -10,6 +10,7 @@ export default  {
 	withdraw: {
 		queryWithdrawPwd: 'GET /withdraw/queryWithdrawPwd',
 		setWithdrawPwd: 'PUT /withdraw/setWithdrawPwd',
+		updateLoginPwd: 'PUT /users/updateLoginPwd',
 		withdraw: 'POST /withdraw/withdraw',
 		userWithDrawRecord: 'GET /withdraw/userWithDrawRecord',
 	},
@@ -35,5 +36,8 @@ export default  {
 	message: {
 		systemList: 'GET /message/systemList',
 		detail: 'GET /message/detail'
+	},
+	rollback: {
+		userRollbackRecords: 'GET /rollback/userRollbackRecords'
 	}
 }

@@ -9,6 +9,7 @@ import PersonSet from './routes/person/PersonSet';
 import Wallet from './routes/person/Wallet';
 import BindBank from './routes/person/BindBank';
 import SetWithdrawPwd from './routes/person/SetWithdrawPwd';
+import SetLoginPwd from './routes/person/SetLoginPwd';
 import MyBankCard from './routes/person/MyBankCard';
 import SelectAlipayAccount from './routes/recharge/SelectAlipayAccount';
 import AlipayRecharge from './routes/recharge/AlipayRecharge';
@@ -17,6 +18,7 @@ import MessageDetail from './routes/message/Detail';
 import IntegralChangeRecord from './routes/records/IntegralChangeRecord';
 import BetRecord from './routes/records/BetRecord';
 import WithdrawRecord from './routes/records/WithdrawRecord';
+import RollbackRecord from './routes/records/RollbackRecord';
 
 const RouterComponent = () => {
   return (
@@ -31,12 +33,14 @@ const RouterComponent = () => {
           {SetScene('wallet', '钱包', Wallet)}
           {SetScene('bindBank', '设置', BindBank)}
           {SetScene('setWithdrawPwd', '提现密码', SetWithdrawPwd)}
+          {SetScene('setLoginPwd', '修改登录密码', SetLoginPwd)}
           {SetScene('myBankCard', '银行卡', MyBankCard)}
           {SetScene('withdraw', '提现', Withdraw)}
           {SetScene('messageDetail', '消息详情', MessageDetail)}
           {SetScene('changeRecords', '账变记录', IntegralChangeRecord)}
           {SetScene('betRecord', '下注记录', BetRecord)}
           {SetScene('withdrawRecord', '下注记录', WithdrawRecord)}
+          {SetScene('rollbackRecord', '我的回水', RollbackRecord)}
           {SetScene('room', '初级房', Room, <Icon
               onPress={()=>alert("Right button")}
               name="md-add" color='white' size={25}/>,false)}
