@@ -20,10 +20,12 @@ export default  {
 	},
 	bet: {
 		records: 'GET /bet/records',
+		roomBetRecords: 'GET /bet/roomBetRecords',
 		cancelBet: 'PUT /bet/cancelBet',
 		userRecords: 'PUT /bet/userRecords',
 		integralChangeRecords: 'GET /bet/integralChangeRecords',
 		userBetRecords: 'GET /bet/userBetRecords',
+		trend: 'GET /bet/trend',
 	},
 	recharge: {
 		getCollectionAccounts: 'GET /recharge/getCollectionAccounts',
@@ -35,9 +37,13 @@ export default  {
 	},
 	message: {
 		systemList: 'GET /message/systemList',
+		userMessages: 'GET /message/userMessages',
 		detail: 'GET /message/detail'
 	},
 	rollback: {
 		userRollbackRecords: 'GET /rollback/userRollbackRecords'
+	},
+	lottery: {
+		records: 'GET /lottery/records'
 	}
 }

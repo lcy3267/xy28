@@ -5,20 +5,31 @@ export default {
     namespace: 'message',
 
     state: {
-        systemList: [],
+        systemMsgList: [],
+        userMsgList: [],
     },
 
     effects: {
-        *systemList({ params, callback }, { put }) {
+        *messageList({ params, callback }, { put }) {
             params.pageSize = 20;
-            let rs = yield sendRequest(api.message.systemList, params);
+            const path = params.type == 1?api.message.systemList : api.message.userMessages;
+            let rs = yield sendRequest(path, params);
             if(rs && rs.err_code == 0){
-                yield put({
-                    type: 'setList' ,
-                    systemList: rs.systemList,
-                    loadMore: params.pageIndex != 1,
-                });
-                callback && callback(rs.systemList)
+                if(params.type == 1){
+                    yield put({
+                        type: 'setSystemMsgList' ,
+                        systemMsgList: rs.systemList,
+                        loadMore: params.pageIndex != 1,
+                    });
+                    callback && callback(rs.systemList)
+                }else{
+                    yield put({
+                        type: 'setUserMsgList' ,
+                        userMsgList: rs.userMessages,
+                        loadMore: params.pageIndex != 1,
+                    });
+                    callback && callback(rs.userMessages)
+                }
             }
         },
         *detail({ params, callback }, { put }) {
@@ -30,12 +41,19 @@ export default {
     },
 
     reducers: {
-        setList(state,{ systemList, loadMore }) {
+        setSystemMsgList(state,{ systemMsgList, loadMore }) {
             if(loadMore){
-                let data = state.systemList;
-                systemList = data.concat(systemList);
+                let data = state.systemMsgList;
+                systemMsgList = data.concat(systemMsgList);
             }
-            return {...state, systemList}
+            return {...state, systemMsgList}
+        },
+        setUserMsgList(state,{ userMsgList, loadMore }) {
+            if(loadMore){
+                let data = state.userMsgList;
+                userMsgList = data.concat(userMsgList);
+            }
+            return {...state, userMsgList}
         },
     },
 }

@@ -69,7 +69,7 @@ export default {
             Storage.removeItem(storageKey.userInfo);
             callback && callback();
         },
-        *getUserInfo({},{put}){
+        *getUserInfo({params},{put}){
             let rs = yield sendRequest(api.user.getUserInfo);
             if(rs && rs.err_code == 0){
                 const info = rs.user;

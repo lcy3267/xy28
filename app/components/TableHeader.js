@@ -16,13 +16,13 @@ export default class TableHeader extends Component{
 
     render(){
 
-        const { headers } = this.props;
-
+        const { headers, type } = this.props;
         return (
             <View style={styles.header}>
                 {headers.map((header, i)=>{
+                    let myStyle = type && type == 'trend'  && i == 0? {flex: 2}:{};
                     return (
-                        <View key={i} style={styles.filed}>
+                        <View key={i} style={[styles.filed, myStyle]}>
                             <Text style={styles.headerText}>{header}</Text>
                         </View>
                     )

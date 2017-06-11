@@ -155,9 +155,5 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = ({}) => {
-    return {};
-};
-
-export default connect(mapStateToProps)(WithdrawRecord);
+export default connect()(WithdrawRecord);
 

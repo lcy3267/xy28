@@ -24,8 +24,6 @@ class My extends Component{
     // 构造
     constructor(props) {
         super(props);
-        // 初始状态
-        this.state = {};
     }
 
     render(){
@@ -36,7 +34,7 @@ class My extends Component{
             <View style={styles.container}>
                 <View style={{flexDirection: 'row',padding: 10,backgroundColor: 'white',marginBottom: 20}}>
                     <View style={{flex: 1}}>
-                        <Image source={require('../../asset/level_2.jpg')}
+                        <Image source={require('../../asset/person.jpg')}
                                style={{width: 68,height: 68}}
                         />
                     </View>
@@ -67,10 +65,10 @@ class My extends Component{
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
-                        onClick={() => {}}
+                        onClick={() => {console.log('1234')}}
                     >关于</Item>
                     <Item
-                        onClick={() => {}}
+                        onClick={() => {console.log('1234')}}
                         thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
                     >分享</Item>
                     <Item

@@ -35,7 +35,7 @@ class Index extends Component{
                         <Carousel
                             className="my-carousel" autoplay={true} infinite
                         >
-                            {[require('../asset/level_1.jpg'),require('../asset/level_2.jpg'),require('../asset/level_3.jpg')].map(ii => (
+                            {[require('../asset/level_1.png'),require('../asset/level_2.png'),require('../asset/level_3.png')].map(ii => (
                                 <TouchableHighlight key={ii}>
                                     <Image style={styles.actImage} source={ii} />
                                 </TouchableHighlight>
@@ -58,14 +58,14 @@ class Index extends Component{
                         <TouchableOpacity
                             onPress={()=>{Actions.roomList({roomType: 1, title: '北京游28'})}}
                             activeOpacity={0.8} style={[styles.card,{paddingRight:7.5}]}>
-                            <Image style={styles.cardImg} source={require('../asset/91b4af37023f9b7fca2f934fc66ce8e4.png')} >
+                            <Image style={styles.cardImg} source={require('../asset/china.png')} >
                                 <Text style={styles.gameText}>北京28</Text>
                             </Image>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={()=>{Actions.roomList({roomType: 2, title: '加拿大28'})}}
                             activeOpacity={0.8} style={[styles.card,{paddingLeft:7.5}]}>
-                            <Image style={styles.cardImg} source={require('../asset/1c84ea44fe055fb9244ab18becd159bb.png')} >
+                            <Image style={styles.cardImg} source={require('../asset/cnd.png')} >
                                 <Text style={styles.gameText}>加拿大28</Text>
                             </Image>
                         </TouchableOpacity>

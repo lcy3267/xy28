@@ -20,11 +20,10 @@ import { connect } from 'dva/mobile';
 import { Carousel, Button, Popup, Grid, Toast, Tabs, Modal } from 'antd-mobile';
 import Common from '../common/index';
 import config,{ combineRates } from '../config';
-import { formatDate, GetDateStr } from '../common/FormatUtil'
+import { getDate, GetDateStr } from '../common/FormatUtil'
+import RoomPopover from '../components/RoomPopover';
 
-const pageHeight = Common.window.height;
-const pageWidth = Common.window.width;
-const TabPane = Tabs.TabPane;
+const {height, width, paddingTop} = Common.window;
 
 
 const showToastNoMask = (message) =>{
@@ -62,6 +61,7 @@ class Room extends Component{
             overTimes: null,
             messages: [],//type: 0 用户发言, -1:系统消息, string:下注
             opening: false,
+            isClose: false,
             cancelBets: [],//用户取消下注的序号
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
@@ -79,12 +79,32 @@ class Room extends Component{
 
         Toast.loading('加载中...',15);
 
-        //加载5条下注记录
-        //dispatch({type: 'bet/records'});
-
         this.loadRoomInfo(()=>{
             //加载赔率规则
             this.loadRoomGameRules();
+
+            //加载5条下注记录
+            dispatch({
+                type: 'bet/roomBetRecords',
+                params: {
+                    roomId: this.roomId,
+                },
+                callback: (records)=>{
+                    records = records.map((record)=>{
+                        record.playType = record.play_type;
+                        record.money = record.bottom_pour_money;
+                        record.number = record.bottom_pour_number;
+                        record.type = record.bottom_pour_type;
+                        record.user = {
+                            user_id: record.user_id,
+                            name: record.name,
+                            avatar_picture_url: record.avatar_picture_url,
+                        };
+                        return record;
+                    })
+                    this.setState({messages: records.reverse()});
+                }
+            });
 
             const namespace = this.state.room.room_type == 1?'/bj':'/cnd';
 
@@ -167,15 +187,16 @@ class Room extends Component{
             });
 
             this.socket.on('updateStatus', (result) => {
-                let time = result.time;
+                const {opening, time, isClose} = result;
                 let minute = Math.floor(time/60);
                 let second = time%60;
-                this.setState({opening: result.opening, overTimes: {minute, second}});
+                this.setState({opening: opening, overTimes: {minute, second}, isClose});
             });
 
             this.socket.on('updateIntegral', (data)=>{
                 const {integral, winIntegral} = data;
-                this.setState({integral, winIntegral});
+                this.setState({integral});
+                if(winIntegral) this.setState({winIntegral});
             });
 
             //监听赔率变动
@@ -358,8 +379,8 @@ class Room extends Component{
     }
 
     render(){
-        let lottery = this.state.lottery;
-        let messages = this.state.messages;
+        const { messages, lottery, isClose, opening} = this.state;
+
         return (
            <View style={styles.container}>
                {this.firstDom(lottery)}
@@ -374,10 +395,11 @@ class Room extends Component{
                        />:null}
 
                    </View>
+
                    <View style={{height: 50,backgroundColor: '#E9E9E9',flexDirection: 'row'}}>
                        <View style={{width: 80,height: '100%', justifyContent: 'center',alignItems: 'center'}}>
                            <Button
-                               disabled={this.state.opening}
+                               disabled={opening || isClose}
                                onClick={this.showPourList}
                                type="primary" style={{width: 62,height: 32,borderRadius: 4}}>
                                <Text style={{fontSize: 14,width: '100%'}}>下注</Text>
@@ -403,18 +425,33 @@ class Room extends Component{
     firstDom(lottery){
         let overTimes = this.state.overTimes;
         let openTimeStr = this.state.opening?'封盘中':`${overTimes?overTimes.minute:'?'} 分 ${overTimes?overTimes.second:'?'}秒`;
-        const serial_number = this.state.serial_number;
+        const {serial_number, winIntegral, isClose, room: { room_type }} = this.state;
+
         return (
             <View style={{backgroundColor: '#45A2FF',height: 64,flexDirection: 'row'}}>
                 <View style={{flex: 1, justifyContent: 'center',alignItems: 'center'}}>
-                    <Text style={{color: 'white', fontSize: 13}}>距离 {serial_number?this.state.serial_number+1:'?'} 期截止</Text>
-                    <Text style={{color: 'white', fontSize: 18,marginTop: 4}}>{openTimeStr}</Text>
+                {isClose?
+                    [
+                        <Text key="1" style={{color: 'white',marginBottom: 3}}>本房间的游戏时间为</Text>,
+                        <Text key="2" style={{color: 'white'}}>{room_type == 1?'09:00~23:55':'21:00~次日20:00'}</Text>
+                    ]:
+                    [
+                        <Text key="1" style={{color: 'white', fontSize: 13}}>距离 {serial_number?serial_number+1:'?'} 期截止</Text>,
+                        <Text key="2" style={{color: 'white', fontSize: 18,marginTop: 4}}>{openTimeStr}</Text>
+                    ]
+                }
                 </View>
                 <View style={{flex: 1, alignItems: 'center',flexDirection: 'row'}}>
                     <View style={{width: 1,height: '68%',backgroundColor: 'white'}} />
-                    <View style={{marginLeft: 40}}>
-                        <Text style={{color: 'white'}}>{this.state.integral}</Text>
-                        <Text style={{color: 'red', marginLeft: 15}}>{this.state.winIntegral?this.state.winIntegral:''}</Text>
+                    <View style={{marginLeft: 50, alignItems: 'center'}}>
+                        <View style={{flexDirection: 'row', marginBottom: 3}}>
+                            <Text style={{color: '#2035A0', fontSize: 13}}>余额</Text>
+                            <Text style={{color: winIntegral > 0 ?'red':'white',fontSize: 12,
+                         marginLeft: 15}}>{winIntegral?winIntegral:''}</Text>
+                        </View>
+                        <View >
+                            <Text style={{color: 'white'}}>{this.state.integral}  元宝</Text>
+                        </View>
                     </View>
                 </View>
             </View>
@@ -429,7 +466,7 @@ class Room extends Component{
             hasMax = '小'
         }
         if(lottery.sum % 2 == 0){
-            hasDouble = '双'
+            hasDouble = '双';
         }
         return (
             <View style={{height: 35,backgroundColor: 'white', alignItems: 'center',
@@ -476,7 +513,7 @@ class Room extends Component{
             <View style={styles.item}>
                 <View>
                     <TouchableOpacity style={styles.imageView}>
-                        <Image style={styles.itemImage} source={require('../asset/level_3.jpg')}/>
+                        <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
                     </TouchableOpacity>
                 </View>
                 <View style={{flexDirection: 'column', paddingRight: 110}}>
@@ -492,8 +529,6 @@ class Room extends Component{
     }
 
     rightMessageView(item){
-        
-        
         return (
             <View style={[styles.item,{justifyContent:'flex-end'}]}>
                 <View style={{flexDirection: 'column', marginLeft: 110}}>
@@ -506,7 +541,7 @@ class Room extends Component{
                 </View>
                 <View>
                     <TouchableOpacity style={styles.imageView}>
-                        <Image style={styles.itemImage} source={require('../asset/level_3.jpg')}/>
+                        <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -518,48 +553,21 @@ class Room extends Component{
 
         let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
 
+
         return (
-            <View style={styles.item}>
-                <View>
-                    <TouchableOpacity style={styles.imageView}>
-                        <Image style={styles.itemImage} source={require('../asset/level_3.jpg')}/>
-                    </TouchableOpacity>
+            <View>
+                <View style={styles.timeView}>
+                    <Text style={styles.time}>{getDate(bet.created_at)}</Text>
                 </View>
-                <View style={{flexDirection: 'column',width: 220}}>
-                    <View style={{height: 15,paddingLeft: 0}}>
-                        <Text style={{fontSize: 12}}>{bet.user.name}</Text>
+                <View style={styles.item}>
+                    <View>
+                        <TouchableOpacity style={styles.imageView}>
+                            <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
+                        </TouchableOpacity>
                     </View>
-                    <View style={{backgroundColor: '#F16B00',flexDirection: 'column',borderRadius: 5,padding: 8}}>
-                        <View style={{flexDirection: 'row'}}>
-                            <View style={{flex: 1}}>
-                                <Text style={{color: 'white'}}>{bet.serial_number}期</Text>
-                            </View>
-                            <View style={{flex: 1}}>
-                                <Text style={{color: 'white'}}>投注类型: {betTypeStr}</Text>
-                            </View>
-                        </View>
-                        <View style={{marginTop: 5}}>
-                            <Text style={{color: 'white'}}>金额: {bet.money}元宝</Text>
-                        </View>
-                    </View>
-                </View>
-            </View>
-        )
-    }
-
-    rightBetMessageView(bet, rowID){
-
-        if(this.state.cancelBets.indexOf(rowID) > -1) return null;
-
-        let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
-        
-        return (
-            <View style={[styles.item,{justifyContent:'flex-end'}]}>
-                <TouchableOpacity activeOpacity={1}  onPress={()=>{this.cancelBet(bet, rowID)}}
-                    style={styles.itemContentView}>
                     <View style={{flexDirection: 'column',width: 220}}>
-                        <View style={{height: 15}}>
-                            <Text style={{fontSize: 12, textAlign: 'right'}}>{bet.user.name}</Text>
+                        <View style={{height: 15,paddingLeft: 0}}>
+                            <Text style={{fontSize: 12}}>{bet.user.name}</Text>
                         </View>
                         <View style={{backgroundColor: '#F16B00',flexDirection: 'column',borderRadius: 5,padding: 8}}>
                             <View style={{flexDirection: 'row'}}>
@@ -575,12 +583,52 @@ class Room extends Component{
                             </View>
                         </View>
                     </View>
-                    <View>
-                        <TouchableOpacity style={styles.imageView}>
-                            <Image style={styles.itemImage} source={require('../asset/level_1.jpg')}/>
-                        </TouchableOpacity>
-                    </View>
-                </TouchableOpacity>
+                </View>
+            </View>
+        )
+    }
+
+    rightBetMessageView(bet, rowID){
+
+        if(this.state.cancelBets.indexOf(rowID) > -1) return null;
+
+        let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
+
+        const time = bet.updated_at ? getDate(bet.created_at) : bet.created_at;
+
+        return (
+            <View>
+                <View style={styles.timeView}>
+                    <Text style={styles.time}>{time}</Text>
+                </View>
+                <View style={[styles.item,{justifyContent:'flex-end'}]}>
+                    <TouchableOpacity activeOpacity={1}  onPress={()=>{this.cancelBet(bet, rowID)}}
+                        style={styles.itemContentView}>
+                        <View style={{flexDirection: 'column',width: 220}}>
+                            <View style={{height: 15}}>
+                                <Text style={{fontSize: 12, textAlign: 'right'}}>{bet.user.name}</Text>
+                            </View>
+                            <View style={{backgroundColor: '#F16B00',flexDirection: 'column',borderRadius: 5,padding: 8}}>
+                                <View style={{flexDirection: 'row'}}>
+                                    <View style={{flex: 1}}>
+                                        <Text style={{color: 'white'}}>{bet.serial_number}期</Text>
+                                    </View>
+                                    <View style={{flex: 1}}>
+                                        <Text style={{color: 'white'}}>投注类型: {betTypeStr}</Text>
+                                    </View>
+                                </View>
+                                <View style={{marginTop: 5}}>
+                                    <Text style={{color: 'white'}}>金额: {bet.money}元宝</Text>
+                                </View>
+                            </View>
+                        </View>
+                        <View>
+                            <TouchableOpacity style={styles.imageView}>
+                                <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </View>
             </View>
         )
     }
@@ -597,7 +645,7 @@ class PopupContent extends Component {
         this.moneyChange = this.moneyChange.bind(this);
         // 初始状态
         this.state = {
-            tabKey: 1,
+            tabKey: 0,
         };
     }
 
@@ -642,8 +690,8 @@ class PopupContent extends Component {
                 <View key={key} style={{width: '20%',height: 50,paddingHorizontal: 20}}>
                     <TouchableOpacity
                         activeOpacity={1}
-                        onPress={()=>{this.setState({selectRule: key, betType: key, playType: 1})}}
-                        style={[key == this.state.selectRule ?
+                        onPress={()=>{this.setState({select1: key, betType: key, playType: 1,select2:undefined})}}
+                        style={[key == this.state.select1 ?
                             {borderWidth: 1,borderColor: 'white'} : null,centerStyle]}>
                         <Text style={{color: 'white'}}>{combineRates[key]}</Text>
                         <Text style={{color: 'white'}}>1:{combineRate[key].value}</Text>
@@ -663,8 +711,8 @@ class PopupContent extends Component {
                         <TouchableOpacity
                             key={key}
                             activeOpacity={1}
-                            onPress={()=>{this.setState({betType: key, playType: 2})}}
-                            style={[key == this.state.betType ?
+                            onPress={()=>{this.setState({select2: key,betType: key, playType: 2, select1:undefined})}}
+                            style={[key == this.state.select2 ?
                                 {borderWidth: 1,borderColor: 'white'} : null,centerStyle]}>
                             <Text style={{color: 'white'}}>{key}</Text>
                             <Text style={{color: 'white'}}>1 : {rate}</Text>
@@ -677,25 +725,35 @@ class PopupContent extends Component {
 
         return (
             <View style={{backgroundColor: '#48B0FF', paddingBottom:this.state.hasPosition && Platform.OS == 'ios'?220:0}}>
-                <View style={[{flexDirection: 'row',height: 50},centerStyle]}>
-                    <Icon onPress={()=>{this.tabMove(1)}} name='md-arrow-dropleft' size={30} style={{color: 'white'}}/>
-                    <Text style={{color: 'white', marginLeft: 100, marginRight: 100}}>大小单双</Text>
-                    <Icon onPress={()=>{this.tabMove(2)}} name='md-arrow-dropright' size={30} style={{color: 'white'}}/>
-                </View>
-
-                <View style={{width: '200%', flexDirection: 'row', left: this.state.tabKey == 2?-pageWidth:0, }}>
-
-                    <View style={{flex: 1,height: 100,flexDirection: 'row',flexWrap: 'wrap'}}>
-                        {combineRuleView}
+                <Icon onClick={()=>{this.tabMove(0)}}
+                      name='md-arrow-dropleft' size={30}
+                      style={{color: 'white',position: 'absolute', top: 10, left: 60}}/>
+                <Icon onPress={()=>{this.tabMove(1)}}
+                      name='md-arrow-dropright' size={30}
+                      style={{color: 'white',position: 'absolute', top: 10, right: 60}}/>
+                <Carousel dots={false} selectedIndex={0}>
+                    <View key="1">
+                        <View style={{height: 50,justifyContent: 'center',alignItems: 'center'}}>
+                            <Text style={{color: 'white'}}>大小单双</Text>
+                        </View>
+                        <View style={{flexDirection: 'row',flexWrap: 'wrap'}}>
+                            {combineRuleView}
+                        </View>
                     </View>
+                    <View>
+                        <View style={{height: 50,justifyContent: 'center',alignItems: 'center'}}>
+                            <Text style={{color: 'white'}}>猜数字</Text>
+                        </View>
+                        <ScrollView style={{height: 100}}>
+                            {singleRuleView}
+                        </ScrollView>
+                    </View>
+                </Carousel>
 
-                    <ScrollView style={{flex: 1,height: 100}}>
-                        {singleRuleView}
-                    </ScrollView>
-                </View>
 
                 <View style={[{flexDirection: 'row', height: 40,justifyContent: 'space-between',paddingHorizontal: 20}]}>
-                    <Button size="small" type="ghost" style={{borderRadius: 4,height: 30,borderColor: 'white'}}>
+                    <Button size="small" type="ghost"
+                            style={{borderRadius: 4,height: 30,borderColor: 'white'}}>
                         <Text style={{color: 'white',}}>赔率说明</Text>
                     </Button>
                     <Button
@@ -738,14 +796,12 @@ function getSendUser(info) {
     }
 }
 
-const {window} = Common;
-
 const styles = StyleSheet.create({
     container: {
-        width: window.width,
-        height: pageHeight,
+        width: width,
+        height: height,
         flexDirection: 'column',
-        paddingTop: window.paddingTop,
+        paddingTop: paddingTop,
     },
     card: {
         flex: 1,
@@ -767,8 +823,7 @@ const styles = StyleSheet.create({
     },
     item:{
         flexDirection: 'row',
-        paddingTop: 8,
-        paddingBottom: 8,
+        paddingBottom: 12,
         width: '100%'
     },
     imageView: {
@@ -795,7 +850,7 @@ const styles = StyleSheet.create({
         bottom: -1,
     },
     itemContent: {
-        maxWidth: Common.window.width-164,
+        maxWidth: width-164,
         backgroundColor: '#e6e6e6',
         borderRadius: 4,
         padding: 10,
@@ -850,9 +905,22 @@ const styles = StyleSheet.create({
         overflow: 'hidden'
     },
     ruleButton: {
-        backgroundColor: 'white',borderRadius: 4,
+        backgroundColor: 'white',
+        borderRadius: 4,
         height: 30,
     },
+    timeView: {
+        width: 110,
+        marginLeft: (width - 115)/2,
+        borderRadius: 4,
+        backgroundColor: '#CBCBCB',
+        padding: 1,
+    },
+    time: {
+        fontSize: 12,
+        color: 'white',
+        textAlign: 'center'
+    }
 });
 
 const mapStateToProps = ({gameRules,user}) => {

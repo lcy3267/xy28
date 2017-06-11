@@ -158,9 +158,5 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = ({}) => {
-    return {};
-};
-
-export default connect(mapStateToProps)(BetRecord);
+export default connect()(BetRecord);
 

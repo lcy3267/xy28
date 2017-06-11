@@ -13,12 +13,10 @@ export default {
         *getRooms({callback},{put}) {
             let rs = yield sendRequest(api.rooms.getRooms);
             if(rs && rs.err_code == 0){
-                //callback && callback(rs.rooms)
                 yield put({type: 'setRooms', rooms: rs.rooms});
             }
         },
         *getRoomInfo({params, callback}) {
-            console.log('------getRoomInfo--------')
             let rs = yield sendRequest(api.rooms.getRoomInfo, params);
             if(rs && rs.err_code == 0){
                 callback && callback(rs.room);

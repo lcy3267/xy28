@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = ({}) => {
+const mapStateToProps = () => {
     return {};
 };
 

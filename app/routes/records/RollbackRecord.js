@@ -149,9 +149,6 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = ({}) => {
-    return {};
-};
 
-export default connect(mapStateToProps)(RollbackRecord);
+export default connect()(RollbackRecord);
 

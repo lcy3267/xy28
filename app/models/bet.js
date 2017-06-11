@@ -19,6 +19,12 @@ export default {
                 yield put({ type: 'setList' , rules:rs.rules});
             }
         },
+        *roomBetRecords({params, callback}, { put }) {
+            let rs = yield sendRequest(api.bet.roomBetRecords, params);
+            if(rs && rs.err_code == 0 && rs.records){
+                callback && callback(rs.records);
+            }
+        },
         *cancelBet({params, callback, errCallback}){
             let rs = yield sendRequest(api.bet.cancelBet,params);
             if(rs && rs.err_code == 0 ){

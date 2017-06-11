@@ -25,29 +25,18 @@ class Message extends Component{
     constructor(props) {
         super(props);
         // 初始状态
-        this.state = {
-        };
+        this.state = {};
     }
-
-    callback = (key)=>{
-        console.log('onChange', key);
-    }
-
-    handleTabClick = (key)=>{
-        console.log('onTabClick', key);
-    }
-
 
     render(){
         return (
             <View style={styles.container}>
-                <Tabs defaultActiveKey="1"
-                      onChange={this.callback} onTabClick={this.handleTabClick}>
+                <Tabs defaultActiveKey="1">
                     <TabPane tab="通知公告" key="1">
-                        <SystemMessage {...this.props}/>
+                        <MyMessage {...this.props} type="1"/>
                     </TabPane>
                     <TabPane tab="我的消息" key="2">
-                        <MyMessage {...this.props}/>
+                        <MyMessage {...this.props} type="2"/>
                     </TabPane>
                 </Tabs>
             </View>
@@ -56,7 +45,7 @@ class Message extends Component{
 }
 
 
-class SystemMessage extends Component{
+class MyMessage extends Component{
     // 构造
     constructor(props) {
         super(props);
@@ -64,7 +53,6 @@ class SystemMessage extends Component{
         this.state = {
             pageIndex: 1,
             hasMore: true,
-            systemList: [],
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
             }),
@@ -77,8 +65,9 @@ class SystemMessage extends Component{
     loadList = (callback)=>{
         this.loading = true;
         this.props.dispatch({
-            type: 'message/systemList',
+            type: 'message/messageList',
             params: {
+                type: this.props.type,
                 pageIndex: this.state.pageIndex,
             },
             callback: (records)=>{
@@ -101,16 +90,19 @@ class SystemMessage extends Component{
 
     render(){
 
-        const {message: { systemList }} = this.props;
+        const {message: { systemMsgList, userMsgList }, type} = this.props;
 
+        let arr = type == 1? systemMsgList : userMsgList;
+        arr = arr?arr:[];
+        
         return (
             <View style={styles.container}>
                 <View style={styles.list}>
-                    {systemList.length>0?<ListView
+                    {arr.length>0?<ListView
                         ref='mylistView'
                         onEndReachedThreshold={30}
                         onEndReached={this.loadMore}
-                        dataSource={this.state.dataSource.cloneWithRows(systemList)}
+                        dataSource={this.state.dataSource.cloneWithRows(arr)}
                         renderRow={this._renderRow.bind(this)}
                         style={{width: '100%',height: '100%'}}
                     />:null}
@@ -124,34 +116,12 @@ class SystemMessage extends Component{
         return(
             <Item
                 onClick={()=>{Actions.messageDetail({id: msg.id})}}
-                key={rowID} extra={time}>{msg.title}</Item>
+                key={rowID} extra={time}>
+                <Text style={{fontSize: 14}}>{msg.title}</Text>
+            </Item>
         )
     }
 
-}
-
-class MyMessage extends Component{
-    // 构造
-    constructor(props) {
-        super(props);
-        // 初始状态
-        this.state = {};
-    }
-
-    render(){
-        return (
-            <View style={styles.container}>
-                <List>
-                    <Item>你中大奖了</Item>
-                    <Item>我去男男女女女女女</Item>
-                    <Item>水水水水</Item>
-                    <Item>想现在防守打法</Item>
-                    <Item>的萨达撒</Item>
-                    <Item>的萨达撒多撒</Item>
-                </List>
-            </View>
-        )
-    }
 }
 
 const pageHeight = Common.window.height - 50;

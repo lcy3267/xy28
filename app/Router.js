@@ -1,4 +1,5 @@
 import React from 'react';
+import {View} from 'react-native';
 import { Scene, Router } from 'react-native-router-flux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Home from './routes/Home';
@@ -19,6 +20,9 @@ import IntegralChangeRecord from './routes/records/IntegralChangeRecord';
 import BetRecord from './routes/records/BetRecord';
 import WithdrawRecord from './routes/records/WithdrawRecord';
 import RollbackRecord from './routes/records/RollbackRecord';
+import Trend from './routes/Trend';
+import { Popover, } from 'antd-mobile';
+import RoomPopover from './components/RoomPopover';
 
 const RouterComponent = () => {
   return (
@@ -39,11 +43,10 @@ const RouterComponent = () => {
           {SetScene('messageDetail', '消息详情', MessageDetail)}
           {SetScene('changeRecords', '账变记录', IntegralChangeRecord)}
           {SetScene('betRecord', '下注记录', BetRecord)}
-          {SetScene('withdrawRecord', '下注记录', WithdrawRecord)}
+          {SetScene('withdrawRecord', '提现记录', WithdrawRecord)}
           {SetScene('rollbackRecord', '我的回水', RollbackRecord)}
-          {SetScene('room', '初级房', Room, <Icon
-              onPress={()=>alert("Right button")}
-              name="md-add" color='white' size={25}/>,false)}
+          {SetScene('trend', '走势图', Trend)}
+          {SetScene('room', '房间', Room, RoomPopover,false)}
        </Scene>
     </Router>
   );
@@ -57,10 +60,17 @@ class TabIcon extends React.Component {
     }
 }
 
-function SetScene(key,title,Component,rightIcon = null,initial=false) {
+function SetScene(key,title,Component,RightIcon = null,initial=false) {
     return (
         <Scene key={key} component={Component} hideNavBar={false} initial={initial}
-               renderRightButton={()=>rightIcon}
+               renderRightButton={
+               (e)=>{
+                   if(key == 'room') {
+                    return <RightIcon title={e.title}/>;
+                   }else{
+                    return null;
+                   }
+               }}
                titleStyle={{color: 'white'}}  title={title} navigationBarStyle={{backgroundColor: '#323139'}}/>
     )
 }

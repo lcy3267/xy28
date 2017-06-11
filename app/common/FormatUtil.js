@@ -61,6 +61,7 @@ export const formatDate =  (date,fmt) => {
 
 export const getDate = (date)=>{
   date = new Date(date);
+  if(!date) return date;
   return formatDate(date,'yyyy-MM-dd hh:mm');
 }
 

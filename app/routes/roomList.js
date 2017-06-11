@@ -52,9 +52,9 @@ class RoomList extends Component{
     }
 
     getRoomImg(level){
-        if(level == 1) return require(`../asset/level_1.jpg`);
-        if(level == 2) return require(`../asset/level_2.jpg`);
-        if(level == 3) return require(`../asset/level_3.jpg`);
+        if(level == 1) return require(`../asset/level_1.png`);
+        if(level == 2) return require(`../asset/level_2.png`);
+        if(level == 3) return require(`../asset/level_3.png`);
     }
 
     getRoomLevel(level){

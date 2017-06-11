@@ -51,8 +51,17 @@ class Home extends Component{
             this.props.dispatch({type: 'user/getUserInfo'});
         }else if(i == 2){
             this.props.dispatch({
-                type: 'message/systemList',
+                type: 'message/messageList',
                 params: {
+                    type: 1,
+                    pageIndex: 1,
+                },
+            });
+
+            this.props.dispatch({
+                type: 'message/messageList',
+                params: {
+                    type: 2,
                     pageIndex: 1,
                 },
             });

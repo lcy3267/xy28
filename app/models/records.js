@@ -5,7 +5,7 @@ export default {
     namespace: 'records',
 
     state: {
-
+        record: 1,
     },
 
     effects: {
@@ -47,8 +47,13 @@ export default {
                 errCallback && errCallback(rs);
             }
         },
-    },
-
-    reducers: {
+        *trend({params, callback, errCallback}){
+            let rs = yield sendRequest(api.lottery.records, params);
+            if(rs && rs.err_code == 0 ){
+                callback && callback(rs.records);
+            }else{
+                errCallback && errCallback(rs);
+            }
+        },
     },
 }
