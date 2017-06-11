@@ -26,8 +26,11 @@ class Index extends Component{
       this.state = {};
     }
 
+    toPlayExplain = (type)=>{
+        Actions.playExplain({infoType: type})
+    }
+
     render(){
-        const {count,dispatch} = this.props;
         return (
             <Image source={require('../asset/bg2.png')} style={styles.container}>
                 <ScrollView>
@@ -35,11 +38,16 @@ class Index extends Component{
                         <Carousel
                             className="my-carousel" autoplay={true} infinite
                         >
-                            {[require('../asset/level_1.png'),require('../asset/level_2.png'),require('../asset/level_3.png')].map(ii => (
-                                <TouchableHighlight key={ii}>
-                                    <Image style={styles.actImage} source={ii} />
-                                </TouchableHighlight>
-                            ))}
+                            {[require('../asset/level_1.png'),require('../asset/level_2.png'),
+                                require('../asset/level_3.png')].map((img, i) => {
+                                    return(
+                                        <TouchableHighlight key={i}
+                                            onPress={()=>{this.toPlayExplain(i+1)}}>
+                                            <Image style={styles.actImage} source={img} />
+                                        </TouchableHighlight>
+                                    )
+                                })
+                            }
                         </Carousel>
                     </View>
                     <View style={styles.news}>
@@ -59,7 +67,10 @@ class Index extends Component{
                             onPress={()=>{Actions.roomList({roomType: 1, title: '北京游28'})}}
                             activeOpacity={0.8} style={[styles.card,{paddingRight:7.5}]}>
                             <Image style={styles.cardImg} source={require('../asset/china.png')} >
-                                <Text style={styles.gameText}>北京28</Text>
+                                <Text style={styles.gameText}>北京 28</Text>
+                                <TouchableHighlight style={styles.gameButton}
+                                    onPress={()=>{this.toPlayExplain(1)}}
+                                ><Text style={styles.gameButtonText}>玩法说明</Text></TouchableHighlight>
                             </Image>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -67,6 +78,9 @@ class Index extends Component{
                             activeOpacity={0.8} style={[styles.card,{paddingLeft:7.5}]}>
                             <Image style={styles.cardImg} source={require('../asset/cnd.png')} >
                                 <Text style={styles.gameText}>加拿大28</Text>
+                                <TouchableHighlight style={styles.gameButton}
+                                                    onPress={()=>{this.toPlayExplain(2)}}
+                                ><Text style={styles.gameButtonText}>玩法说明</Text></TouchableHighlight>
                             </Image>
                         </TouchableOpacity>
                     </View>
@@ -82,6 +96,10 @@ const styles = StyleSheet.create({
     container: {
         width: Common.window.width,
         height: pageHeight
+    },
+    carousel: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#ECD851',
     },
     actImage: {
         width: Common.window.width,
@@ -128,7 +146,8 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 15,
         paddingBottom: 15,
-        height: pageHeight*3.2/6-15,
+        //height: pageHeight*3.2/6-15,
+        height: pageHeight/2+15,
     },
     cardImg: {
         width: '100%',height: '100%',
@@ -139,12 +158,27 @@ const styles = StyleSheet.create({
         backgroundColor: '#278C99'
     },
     gameText: {
-        marginTop: 20,
+        marginTop: 160,
         backgroundColor:'transparent',
         color: 'white',
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold'
     },
+    gameButton:{
+        marginTop: 5,
+        backgroundColor: 'white',
+        padding: 5,
+        paddingHorizontal: 10,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#D2E8FC',
+        opacity: 0.7
+    },
+    gameButtonText: {
+        fontSize: 12,
+        color: 'black',
+        fontWeight: 'bold'
+    }
 });
 
 const mapStateToProps = () => {

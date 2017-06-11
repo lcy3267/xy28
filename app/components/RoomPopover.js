@@ -42,30 +42,36 @@ export default class RoomPopover extends Component{
 
     render(){
         const color = '#3399FF';
+        const textStyle = {
+            color: '#3399FF',
+            fontSize: 15,
+        }
 
         return (
             <Popover
                 visible={true}
                 mask={true}
                 onVisibleChange={this.handleVisibleChange}
-                overlayStyle={{marginTop: 30,right: 20,width: 100}}
+                overlayStyle={{marginTop: 30,right: 20,width: 120}}
                 onSelect={this.onSelect}
                 overlay={[
               (<Item key="4" value="1" style={styles.item}>
-              <Icon name="md-add" color={color} size={18} style={{marginRight: 10}}/>
-              <Text style={{color}}>投注记录</Text>
+              <Icon name="ios-recording-outline" color={color} size={18} style={{marginRight: 10}}/>
+              <Text style={textStyle}>投注记录</Text>
               </Item>),
               (<Item key="5" value="2" style={styles.item}>
-              <Icon name="md-add" color={color} size={18} style={{marginRight: 10}}/>
-              <Text style={{color}}>玩法介绍</Text>
+              <Icon name="ios-game-controller-b-outline" color={color} size={18} style={{marginRight: 10}}/>
+              <Text style={textStyle}>玩法介绍</Text>
               </Item>),
-              (<Item key="6" value="3" style={styles.item}>
-                <Icon name="md-add" color={color} size={18} style={{marginRight: 10}}/>
-                <Text style={{color}}>走势图</Text>
+              (<Item key="6" value="3" style={[styles.item,{borderWidth: 0}]}>
+                <Icon name="md-trending-up" color={color} size={18} style={{marginRight: 10}}/>
+                <Text style={textStyle}>走势图</Text>
               </Item>),
             ]}
             >
-                <Icon name="md-add" color='white' size={25} />
+                <View style={{height: 35, width: 60, alignItems: 'flex-end'}}>
+                    <Icon name="md-add" style={{marginRight: 10}} color='white' size={25} />
+                </View>
             </Popover>
         )
     }
@@ -76,9 +82,11 @@ const styles = StyleSheet.create({
     item: {
         flexDirection: 'row',
         padding: 0,
-        height: 30,
+        height: 40,
         marginLeft: 10,
         alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ECECEC'
     },
 });
 

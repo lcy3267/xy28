@@ -40,7 +40,8 @@ class Recharge extends Component{
                     >支付宝</Item>
                     <Item
                         onClick={() => {}}
-                        thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
+                        thumb="http://bpic.588ku.com//element_origin_min_pic/17/01/14/c17b43cc4e79ff8b846a1337b7b12864.jpg"
+                        arrow="horizontal"
                     >微信</Item>
                     <View style={{width: '100%',justifyContent: 'center',alignItems: 'center',height: 50}}>
                         <Button type="primary" inline size="small" style={{width: 150,height: 30}}>
@@ -67,9 +68,7 @@ class Recharge extends Component{
                         </Button>
                     </View>
                     <View style={styles.bottomView}>
-                        <Button type="ghost" inline size="small" style={{width: 100,height: 35}}>
-                            <Text>联系客服</Text>
-                        </Button>
+
                     </View>
                 </View>
             </View>

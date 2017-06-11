@@ -23,6 +23,7 @@ import RollbackRecord from './routes/records/RollbackRecord';
 import Trend from './routes/Trend';
 import { Popover, } from 'antd-mobile';
 import RoomPopover from './components/RoomPopover';
+import PlayExplain from './routes/PlayExplain';
 
 const RouterComponent = () => {
   return (
@@ -47,6 +48,7 @@ const RouterComponent = () => {
           {SetScene('rollbackRecord', '我的回水', RollbackRecord)}
           {SetScene('trend', '走势图', Trend)}
           {SetScene('room', '房间', Room, RoomPopover,false)}
+          {SetScene('playExplain', '玩法说明', PlayExplain, null, false)}
        </Scene>
     </Router>
   );

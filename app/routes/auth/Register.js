@@ -18,6 +18,7 @@ import { List, InputItem, WhiteSpace, Toast } from 'antd-mobile';
 import Common from '../../common/index';
 import { createForm } from 'rc-form';
 import { md5Key } from '../../config';
+const {myToast, window: { width, height }} = Common;
 
 class Register extends Component{
     // 构造
@@ -34,7 +35,7 @@ class Register extends Component{
         form.validateFields((error, value) => {
             if(!error){
                 if(value.password !== value.password2){
-                    Toast.info('确认密码错误,请重新输入', 1);
+                    myToast('确认密码错误,请重新输入', 1);
                 }else{
                     let params = {
                         account: value.account,
@@ -46,7 +47,7 @@ class Register extends Component{
                     }})
                 }
             }else{
-                Toast.info('请将注册信息填写完整', 1);
+                myToast('请将注册信息填写完整', 1);
             }
         });
     }

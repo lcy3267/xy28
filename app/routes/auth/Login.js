@@ -19,6 +19,8 @@ import Common from '../../common/index';
 import { createForm } from 'rc-form';
 import {md5Key} from '../../config';
 
+const {myToast, window: { width, height }} = Common;
+
 class Login extends Component{
     // 构造
     constructor(props) {
@@ -38,10 +40,10 @@ class Login extends Component{
                     password: md5(md5Key+value.password)
                 }
                 dispatch({type:'user/login',params,errCallback: (rs)=>{
-                    Toast.info('账号或者密码错误');
+                    myToast('账号或者密码错误');
                 }})
             }else{
-                Toast.info('请将注册信息填写完整', 1);
+                myToast('请将注册信息填写完整', 1);
             }
         });
     }
@@ -87,20 +89,16 @@ class Login extends Component{
     }
 }
 
-const pageHeight = Common.window.height - 50;
+const pageHeight = height - 50;
 
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
+        width: width,
         height: pageHeight,
         //paddingTop: 64,
         backgroundColor: '#F5F5F9'
     },
 });
 
-const mapStateToProps = () => {
-    return {};
-};
-
-export default connect(mapStateToProps)(createForm()(Login));
+export default connect()(createForm()(Login));
 

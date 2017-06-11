@@ -39,9 +39,6 @@ class Home extends Component{
                     this.setState({isSet: false});
                 }
             },
-            errCallback:()=>{
-                
-            }
         });
     }
 
