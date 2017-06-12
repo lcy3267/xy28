@@ -21,7 +21,8 @@ import { Carousel, Button, Popup, Grid, Toast, Tabs, Modal } from 'antd-mobile';
 import Common from '../common/index';
 import config,{ combineRates } from '../config';
 import { getDate, GetDateStr } from '../common/FormatUtil'
-import RoomPopover from '../components/RoomPopover';
+import * as Storage from '../service/storage';
+import {storageKey} from '../config';
 
 const {height, width, paddingTop} = Common.window;
 
@@ -79,12 +80,12 @@ class Room extends Component{
 
         Toast.loading('加载中...',15);
 
-        this.loadRoomInfo(()=>{
+        this.loadRoomInfo(async ()=>{
             //加载赔率规则
             this.loadRoomGameRules();
 
             //加载5条下注记录
-            dispatch({
+            /*dispatch({
                 type: 'bet/roomBetRecords',
                 params: {
                     roomId: this.roomId,
@@ -104,16 +105,23 @@ class Room extends Component{
                     })
                     this.setState({messages: records.reverse()});
                 }
-            });
+            });*/
+            let messages = await Storage.getItem(`room_${this.roomId}`);
+            if(messages){
+                this.setState({messages});
+            }
 
             const namespace = this.state.room.room_type == 1?'/bj':'/cnd';
 
             //链接房间
             this.socket = SocketIOClient(config.apiDomain+namespace, {jsonp: false});
             
-            let login = ()=>{
+            let login = async ()=>{
+                let token = await Storage.getItem(storageKey.token);
+
                 this.socket.emit("login",
                     {
+                        token,
                         user: user.info,
                         roomId: this.roomId,
                         roomLevel: this.state.room.level,
@@ -121,10 +129,15 @@ class Room extends Component{
                     }
                 );
             }
-            login();
+            await login();
 
             //监听用户加入房间
             this.socket.on('login', (data) => {
+                if(data.rs && data.rs == 'login err'){
+                    Actions.pop();
+                    showToastNoMask('加载异常..');
+                    return;
+                }
                 Toast.hide();
                 let {joinUser, lotteryRs, integral, opening} = data;
                 if(joinUser.user_id == user.info.user_id){
@@ -208,7 +221,7 @@ class Room extends Component{
             //心跳包
             this.palpitationTimer = setInterval(()=>{
                 this.socket.emit("palpitation");
-            },2000);
+            },3000);
 
             this.socket.on('palpitation', (data)=>{
                 let { result } = data;
@@ -245,6 +258,17 @@ class Room extends Component{
     }
 
     componentWillUnmount() {
+        const messages = this.state.messages,
+            len = messages.length;
+        if(len > 0){
+            if(len > 12){
+                Storage.setItem(`room_${this.roomId}`,messages.slice(len - 12,len))
+            }else {
+                Storage.setItem(`room_${this.roomId}`,messages)
+            }
+        }
+        //保存房间数据
+        //关闭socket
         this.socket && this.socket.disconnect();
         // 如果存在this.timer，则使用clearTimeout清空。
         // 如果你使用多个timer，那么用多个变量，或者用个数组来保存引用，然后逐个clear
@@ -551,13 +575,16 @@ class Room extends Component{
 
     leftBetMessageView(bet){
 
+        console.log(bet,'--------')
+
         let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
 
+        const time = bet.updated_at ? getDate(bet.created_at) : bet.created_at;
 
         return (
             <View>
                 <View style={styles.timeView}>
-                    <Text style={styles.time}>{getDate(bet.created_at)}</Text>
+                    <Text style={styles.time}>{time}</Text>
                 </View>
                 <View style={styles.item}>
                     <View>

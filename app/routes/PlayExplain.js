@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { connect } from 'dva/mobile';
 import Common from '../common/index';
+import RoomPopover  from '../components/RoomPopover';
 
 class PlayExplain extends Component{
     // 构造
@@ -28,9 +29,6 @@ class PlayExplain extends Component{
 
     render(){
         const {infoType} = this.props;
-
-        console.log(infoType,'-=======')
-
         return (
             <ScrollView style={styles.container}>
                 {infoType == 1?

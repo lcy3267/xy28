@@ -26,10 +26,11 @@ class Detail extends Component{
     }
 
     componentWillMount() {
-        const {id, dispatch} = this.props;
+        const {id, dispatch, msgType} = this.props;
 
         dispatch({
             type: 'message/detail',
+            msgType,
             params: {id},
             callback: (info)=>{
                 this.setState({ info })
@@ -54,7 +55,6 @@ class Detail extends Component{
                         <Text style={{fontSize: 13}}>{info.content}</Text>
                     </View>
                 </View>
-
             </View>
         )
     }

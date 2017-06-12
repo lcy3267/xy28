@@ -3,7 +3,6 @@ import {
 	AsyncStorage
 } from 'react-native';
 
-
 export function setItem(key, value) {
 	if (key && value){
 		return AsyncStorage.setItem(key, JSON.stringify(value));

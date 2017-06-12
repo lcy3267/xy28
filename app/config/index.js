@@ -16,8 +16,8 @@ export default {
 		declare: ''
 	},
 	commentTail: '',
-	apiDomain:'http://192.168.0.101:3000',
-	//apiDomain:'http://39.108.105.220:3000',//服务器地址
+	//apiDomain:'http://192.168.0.101:3000',
+	apiDomain:'http://39.108.105.220:3000',//服务器地址
 };
 
 export const weixinAppId = 'wx9d8b9eb6f7a6c46a';
@@ -28,6 +28,7 @@ export const md5Key = 'yuan';
 export const storageKey = {
 	userInfo: "userInfo",
 	token: "token",
+	readMessages: 'readMessages'
 };
 
 export const combineRates = {

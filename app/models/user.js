@@ -42,8 +42,10 @@ export default {
                 yield put({
                     type: 'login',
                     params: {account, password},
-                    errCallback: ()=>{
-                        Storage.clear(storageKey.userInfo);
+                    errCallback: (rs)=>{
+                        if(rs.err_code == -2){
+                            Storage.clear(storageKey.userInfo);
+                        }
                     }
                 });
                 callback && callback();
@@ -59,6 +61,21 @@ export default {
                 callback && callback(rs.user);
                 yield put({ type: 'bindUser' , info});
                 yield put({type: 'queryWithdrawPwd'});
+
+                yield put({
+                    type: 'message/messageList',
+                    params: {
+                        type: 1,
+                        pageIndex: 1,
+                    },
+                });
+                yield put({
+                    type: 'message/messageList',
+                    params: {
+                        type: 2,
+                        pageIndex: 1,
+                    },
+                });
             }else{
                 yield put({ type: 'bindUser' , null});
                 errCallback && errCallback(rs);

@@ -16,6 +16,8 @@ import { connect } from 'dva/mobile';
 import { List, Tabs } from 'antd-mobile';
 import Common from '../../common/index';
 import { getDate } from '../../common/FormatUtil';
+import OcIcon from 'react-native-vector-icons/Octicons';
+
 const Item = List.Item;
 const TabPane = Tabs.TabPane;
 
@@ -113,11 +115,17 @@ class MyMessage extends Component{
 
     _renderRow(msg, sectionID, rowID){
         let time = <Text style={{fontSize: 13,color: '#CBCBCB'}}>{getDate(msg.created_at)}</Text>;
+        const {type} = this.props;
+
         return(
             <Item
-                onClick={()=>{Actions.messageDetail({id: msg.id})}}
+                onClick={()=>{Actions.messageDetail({id: msg.id, msgType: type})}}
                 key={rowID} extra={time}>
-                <Text style={{fontSize: 14}}>{msg.title}</Text>
+                <View style={{flexDirection: 'row'}}>
+                    <Text style={{fontSize: 14,}}>{msg.title}</Text>
+                    {msg.noRead?<OcIcon style={{marginLeft: 5,top: -3}}
+                                        name="primitive-dot" color="red" size={14}/>:null}
+                </View>
             </Item>
         )
     }

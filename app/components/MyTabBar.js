@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     Image,
 } from 'react-native';
-
+import { connect } from 'dva/mobile';
 import Icon from 'react-native-vector-icons/Ionicons';
 import OcIcon from 'react-native-vector-icons/Octicons';
 
@@ -19,6 +19,7 @@ const MyTableBar = React.createClass({
   },
 
   render() {
+    const {message: {hasNoReadMsg}} = this.props;
     return <View style={[styles.tabs, this.props.style, ]}>
       {this.props.tabs.map((tab, i) => {
         return <TouchableOpacity
@@ -32,12 +33,8 @@ const MyTableBar = React.createClass({
               color={this.props.activeTab === i ? '#C3B267' : '#494748'}
               ref={(icon) => { tab[i] = icon; }}
           />
-          {this.props.hasNewMassage&&i==3?
-                <OcIcon style={{position: 'absolute',left: 54,top:2}} name="primitive-dot" color="red" size={12}/>
-                :null
-          }
-          {this.props.hasTimelineMassage&&i==2?
-              <OcIcon style={{position: 'absolute',left: 54,top:2}} name="primitive-dot" color="red" size={12}/>
+          {hasNoReadMsg&&i==2?
+              <OcIcon style={{position: 'absolute',left: 56,top:2}} name="primitive-dot" color="red" size={14}/>
               :null
           }
           <Text style={[styles.iconTile,{color:this.props.activeTab === i ? '#C3B267' : '#494748'}]}>{this.props.tabBarItems[i].title}</Text>
@@ -69,4 +66,9 @@ const styles = StyleSheet.create({
   }
 });
 
-export default MyTableBar;
+
+const mapStateToProps = ({ message }) => {
+  return { message };
+};
+
+export default connect(mapStateToProps)(MyTableBar);

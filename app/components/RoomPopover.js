@@ -25,11 +25,14 @@ export default class RoomPopover extends Component{
 
     onSelect = (value) => {
         const {title} = this.props;
+        let roomType = title.indexOf('北京') > -1 ? 1 : 2;
+
 
         if(value == 1) Actions.betRecord();
-        if(value == 2) Actions.withdrawRecord();
+        if(value == 2) {
+            Actions.playExplain({infoType: roomType})
+        };
         if(value == 3) {
-            let roomType = title.indexOf('北京') > -1 ? 1 : 2;
             Actions.trend({roomType});
         };
     };
@@ -49,8 +52,6 @@ export default class RoomPopover extends Component{
 
         return (
             <Popover
-                visible={true}
-                mask={true}
                 onVisibleChange={this.handleVisibleChange}
                 overlayStyle={{marginTop: 30,right: 20,width: 120}}
                 onSelect={this.onSelect}
@@ -75,7 +76,6 @@ export default class RoomPopover extends Component{
             </Popover>
         )
     }
-
 }
 
 const styles = StyleSheet.create({

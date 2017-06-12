@@ -27,6 +27,7 @@ class Index extends Component{
     }
 
     toPlayExplain = (type)=>{
+        if(type == 3) return;
         Actions.playExplain({infoType: type})
     }
 
@@ -38,8 +39,8 @@ class Index extends Component{
                         <Carousel
                             className="my-carousel" autoplay={true} infinite
                         >
-                            {[require('../asset/level_1.png'),require('../asset/level_2.png'),
-                                require('../asset/level_3.png')].map((img, i) => {
+                            {[require('../asset/play1.png'),require('../asset/play2.png'),
+                                require('../asset/code.png')].map((img, i) => {
                                     return(
                                         <TouchableHighlight key={i}
                                             onPress={()=>{this.toPlayExplain(i+1)}}>
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     },
     carousel: {
         borderBottomWidth: 1,
-        borderBottomColor: '#ECD851',
+        borderBottomColor: 'black',
     },
     actImage: {
         width: Common.window.width,
