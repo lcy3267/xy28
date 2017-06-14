@@ -66,8 +66,12 @@ class MyBankCard extends Component{
                             ]
                         )
                     })}
-
                 </List>
+                {this.state.cards.length == 0?
+                <View style={{height: 50,alignItems: 'center', justifyContent: 'center'}}>
+                    <Text style={{fontSize: 16}}>请进入"设置"->"绑定银行卡",进行添加银行卡</Text>
+                </View>:null}
+
             </View>
         )
     }

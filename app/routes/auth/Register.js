@@ -19,6 +19,7 @@ import Common from '../../common/index';
 import { createForm } from 'rc-form';
 import { md5Key } from '../../config';
 const {myToast, window: { width, height }} = Common;
+import connectSocket from '../../common/socket';
 
 class Register extends Component{
     // 构造
@@ -41,10 +42,15 @@ class Register extends Component{
                         account: value.account,
                         password: md5(md5Key+value.password)
                     }
-                    dispatch({type:'user/register',params,callback: ()=>{
-                        Toast.info('注册成功');
-                        Actions.pop();
-                    }})
+                    dispatch({
+                        type:'user/register',
+                        params,
+                        callback: (token)=>{
+                            connectSocket(dispatch, token);
+                            Toast.info('注册成功');
+                            Actions.pop();
+                        }
+                    });
                 }
             }else{
                 myToast('请将注册信息填写完整', 1);
@@ -53,7 +59,6 @@ class Register extends Component{
     }
 
     render(){
-        const {user} = this.props;
 
         const { getFieldProps } = this.props.form;
 

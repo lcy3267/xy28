@@ -53,7 +53,6 @@ class BetRecord extends Component{
     }
 
     loadMore = ()=>{
-        console.log('000000---------')
         if(!this.state.hasMore) return;
         this.setState({pageIndex: this.state.pageIndex +1 },()=>{
             this.loadRecord((data)=>{

@@ -52,7 +52,7 @@ class Detail extends Component{
                         <Text style={styles.time}>{getDate(info.created_at)}</Text>
                     </View>
                     <View>
-                        <Text style={{fontSize: 13}}>{info.content}</Text>
+                        <Text style={styles.contentText}>{info.content}</Text>
                     </View>
                 </View>
             </View>
@@ -87,7 +87,12 @@ const styles = StyleSheet.create({
     time: {
         fontSize: 12,
         color: 'gray',
+    },
+    contentText: {
+        fontSize: 13,
+        lineHeight: 24,
     }
+
 });
 
 export default connect()(Detail);

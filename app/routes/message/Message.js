@@ -27,13 +27,21 @@ class Message extends Component{
     constructor(props) {
         super(props);
         // 初始状态
-        this.state = {};
+        this.state = {
+            key: "1"
+        };
+    }
+
+    onChange = (e)=>{
+        this.setState({key: e})
     }
 
     render(){
         return (
-            <View style={styles.container}>
-                <Tabs defaultActiveKey="1">
+            <View style={styles.container} >
+                <Tabs
+                    onChange={this.onChange}
+                    activeKey={this.state.key}>
                     <TabPane tab="通知公告" key="1">
                         <MyMessage {...this.props} type="1"/>
                     </TabPane>

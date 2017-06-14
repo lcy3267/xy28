@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import { View, Text, StyleSheet, StatusBar, Platform } from 'react-native';
-import { TabBar } from 'antd-mobile';
+import { TabBar, Toast } from 'antd-mobile';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import MyTabBar from '../components/MyTabBar';
 import Index from './Index';
@@ -11,6 +11,7 @@ import Login from './auth/Login';
 import Common from '../common/index';
 import CommonComponent from '../components/Common';
 import { connect } from 'dva/mobile';
+import connectSocket from '../common/socket';
 
 const tabBarItems = [
     {title: '首页', icon: 'md-home', component: Index, headText: '游戏大厅'},
@@ -30,38 +31,23 @@ class Home extends Component{
     }
 
     componentWillMount() {
-        this.props.dispatch({
-            type: 'user/queryWithdrawPwd',
-            callback: (rs)=>{
-                if(rs != 'error'){
-                    this.setState({isSet: true});
-                }else{
-                    this.setState({isSet: false});
-                }
-            },
+        Toast.loading('链接中...',15);
+        const {dispatch} = this.props;
+
+        dispatch({
+            type: 'user/storageLogin',
+            callback:(token)=>{
+                Toast.hide();
+                connectSocket(dispatch, token);
+            }
         });
     }
 
     onChangeTab = (key)=>{
         const { i } = key;
-        if(i  == 3){
+        const { user: {info} } = this.props;
+        if(i  == 3 && info){
             this.props.dispatch({type: 'user/getUserInfo'});
-        }else if(i == 2){
-            this.props.dispatch({
-                type: 'message/messageList',
-                params: {
-                    type: 1,
-                    pageIndex: 1,
-                },
-            });
-
-            this.props.dispatch({
-                type: 'message/messageList',
-                params: {
-                    type: 2,
-                    pageIndex: 1,
-                },
-            });
         }
     };
 

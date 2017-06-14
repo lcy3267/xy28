@@ -14,6 +14,7 @@ import { List, Button, Toast } from 'antd-mobile';
 import Common from '../../common/index';
 import md5 from 'blueimp-md5';
 import {md5Key} from '../../config';
+const {myToast} = Common;
 
 const Item = List.Item;
 
@@ -32,6 +33,11 @@ class Withdraw extends Component{
         this.props.dispatch({
             type: 'user/getBankCards',
             callback: (cards)=>{
+                if(cards.length == 0){
+                    myToast('请先进行银行卡绑定!');
+                    Actions.pop();
+                    return;
+                }
                 this.setState({cards})
             }
         })

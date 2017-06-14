@@ -18,20 +18,18 @@ export default {
     },
 
     subscriptions: {
-        setup({ dispatch }) {
-            dispatch({type: 'storageLogin'});
-        },
+        
     },
 
     effects: {
         *register({params, callback, errCallback}, { put }) {
             let rs = yield sendRequest(api.user.register, params);
             if(rs && rs.err_code == 0){
-                let info = rs.user;
-                Storage.setItem(storageKey.userInfo, info);
-                Storage.setItem(storageKey.token, rs.token);
-                callback && callback(rs.user_id);
-                yield put({ type: 'bindUser' , info});
+                yield put({
+                    type: 'login',
+                    params: params,
+                    callback
+                });
             }
         },
         *storageLogin({key, callback},{put}){
@@ -42,12 +40,14 @@ export default {
                 yield put({
                     type: 'login',
                     params: {account, password},
+                    callback,
                     errCallback: (rs)=>{
                         if(rs.err_code == -2){
                             Storage.clear(storageKey.userInfo);
                         }
                     }
                 });
+            }else{
                 callback && callback();
             }
         },
@@ -58,32 +58,35 @@ export default {
                 info.password = params.password;
                 Storage.setItem(storageKey.userInfo, info);
                 Storage.setItem(storageKey.token, rs.token);
-                callback && callback(rs.user);
+                callback && callback(rs.token);
                 yield put({ type: 'bindUser' , info});
-                yield put({type: 'queryWithdrawPwd'});
-
-                yield put({
-                    type: 'message/messageList',
-                    params: {
-                        type: 1,
-                        pageIndex: 1,
-                    },
-                });
-                yield put({
-                    type: 'message/messageList',
-                    params: {
-                        type: 2,
-                        pageIndex: 1,
-                    },
-                });
+                yield put({ type: 'updateMsg'});
             }else{
                 yield put({ type: 'bindUser' , null});
                 errCallback && errCallback(rs);
             }
         },
+        *updateMsg({}, params){
+            const {put} = params;
+            yield put({
+                type: 'message/messageList',
+                params: {
+                    type: 1,
+                    pageIndex: 1,
+                },
+            });
+            yield put({
+                type: 'message/messageList',
+                params: {
+                    type: 2,
+                    pageIndex: 1,
+                },
+            });
+        },
         *loginOut({callback},{put}){
             yield put({type: 'bindUser', info: null});
             Storage.removeItem(storageKey.userInfo);
+            Storage.removeItem(storageKey.token);
             callback && callback();
         },
         *getUserInfo({params},{put}){
@@ -113,8 +116,6 @@ export default {
             let rs = yield sendRequest(api.withdraw.queryWithdrawPwd);
             if(rs && rs.err_code == 0){
                 yield put({type: 'isSetWithdrawPwd', isSetWithdrawPwd: true});
-            }else if(rs.err_code == 401){
-                yield put({type: 'storageLogin'});
             }else{
                 yield put({type: 'isSetWithdrawPwd', isSetWithdrawPwd: false});
             }
@@ -164,3 +165,5 @@ export default {
         }
     },
 }
+
+

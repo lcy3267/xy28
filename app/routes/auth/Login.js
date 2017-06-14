@@ -18,6 +18,8 @@ import { List, InputItem, WhiteSpace, Toast } from 'antd-mobile';
 import Common from '../../common/index';
 import { createForm } from 'rc-form';
 import {md5Key} from '../../config';
+import connectSocket from '../../common/socket';
+
 
 const {myToast, window: { width, height }} = Common;
 
@@ -39,9 +41,16 @@ class Login extends Component{
                     account: value.account,
                     password: md5(md5Key+value.password)
                 }
-                dispatch({type:'user/login',params,errCallback: (rs)=>{
-                    myToast('账号或者密码错误');
-                }})
+                dispatch({
+                    type:'user/login',
+                    params,
+                    callback: (token)=>{
+                        connectSocket(dispatch, token);
+                    },
+                    errCallback: (rs)=>{
+                        myToast('账号或者密码错误');
+                    }
+                });
             }else{
                 myToast('请将注册信息填写完整', 1);
             }

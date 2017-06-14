@@ -44,10 +44,6 @@ class Room extends Component{
         let {roomId} = this.props;
 
         this.roomId = roomId;
-        /*this.roomLevel = roomLevel;
-        this.roomType = roomType;
-        //是否允许发言
-        this.is_speak = isSpeak;*/
 
         // 初始状态
         this.state = {
@@ -151,8 +147,17 @@ class Room extends Component{
             // 监听下注信息
             this.socket.on('bet', (result) => {
                 let messages = this.state.messages;
-                messages.push(result.bet);
-                this.setState({messages});
+
+                if(result.err_code && result.err_code == -1){
+                    let sysMsg = {
+                        type: -1,
+                        content: '您已经被管理员禁言下注'
+                    };
+                    messages.push(sysMsg);
+                }else{
+                    messages.push(result.bet);
+                    this.setState({messages});
+                }
             });
 
             // 监听聊天
@@ -574,8 +579,6 @@ class Room extends Component{
 
 
     leftBetMessageView(bet){
-
-        console.log(bet,'--------')
 
         let betTypeStr = bet.playType == 1 ? combineRates[bet.type] : bet.number;
 

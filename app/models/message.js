@@ -65,33 +65,35 @@ export default {
         },
         *detail({ params, msgType, callback }, { put, select }) {
             let rs = yield sendRequest(api.message.detail, params);
+
+            let readMessages = yield Storage.getItem(storageKey.readMessages);
+            readMessages = readMessages?readMessages:[];
+
+            let {systemMsgList, userMsgList, hasNoReadMsg} = yield select(state=>state.message);
+
+            if(readMessages.indexOf(params.id) == -1){
+                readMessages.push(params.id);
+                yield Storage.setItem(storageKey.readMessages, readMessages);
+                if(msgType == 1){
+                    systemMsgList = systemMsgList.map((msg)=>{
+                        if(msg.id == params.id) msg.noRead = false;
+                        return msg
+                    });
+                    yield put({type: 'setSystemMsgList', systemMsgList});
+                }else{
+                    userMsgList = userMsgList.map((msg)=>{
+                        if(msg.id == params.id) msg.noRead = false;
+                        return msg
+                    });
+                    yield put({ type: 'setUserMsgList', userMsgList});
+                }
+            }
+            //遍历外出小红点
+            if(hasNoReadMsg) {
+                yield put({type: 'updateOutRead', readMessages});
+            }
+
             if(rs && rs.err_code == 0){
-                let readMessages = yield Storage.getItem(storageKey.readMessages);
-                readMessages = readMessages?readMessages:[];
-
-                let {systemMsgList, userMsgList, hasNoReadMsg} = yield select(state=>state.message);
-
-                if(readMessages.indexOf(params.id) == -1){
-                    readMessages.push(params.id);
-                    yield Storage.setItem(storageKey.readMessages, readMessages);
-                    if(msgType == 1){
-                        systemMsgList = systemMsgList.map((msg)=>{
-                            if(msg.id == params.id) msg.noRead = false;
-                            return msg
-                        });
-                        yield put({type: 'setSystemMsgList', systemMsgList});
-                    }else{
-                        userMsgList = userMsgList.map((msg)=>{
-                            if(msg.id == params.id) msg.noRead = false;
-                            return msg
-                        });
-                        yield put({ type: 'setUserMsgList', userMsgList});
-                    }
-                }
-                //遍历外出小红点
-                if(hasNoReadMsg) {
-                    yield put({type: 'updateOutRead', readMessages});
-                }
                 callback && callback(rs.info);
             }
         },

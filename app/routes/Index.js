@@ -11,19 +11,24 @@ import {
     TouchableHighlight,
     Image,
     ScrollView,
-    TouchableOpacity
+    TouchableOpacity,
+    Animated,
+    Easing,
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
-import { Carousel, WhiteSpace, WingBlank, NoticeBar } from 'antd-mobile';
+import { Carousel, WhiteSpace, WingBlank } from 'antd-mobile';
 import Common from '../common/index';
+const {width} = Common.window;
 
 class Index extends Component{
     // 构造
     constructor(props) {
       super(props);
       // 初始状态
-      this.state = {};
+      this.state = {
+          fadeInOpacity: new Animated.Value(0) // 初始值
+      };
     }
 
     toPlayExplain = (type)=>{
@@ -31,7 +36,28 @@ class Index extends Component{
         Actions.playExplain({infoType: type})
     }
 
+    componentDidMount() {
+        //this.startAnimation();
+    }
+
+    startAnimation = ()=>{
+        this.state.fadeInOpacity.setValue(width);
+        //this.setState({fadeInOpacity: 0});
+        Animated.timing(this.state.fadeInOpacity, {
+            toValue: -(width-100), // 目标值
+            duration: 10000, // 动画时间
+            easing: Easing.linear // 缓动函数
+        }).start(this.startAnimation);
+    }
+
     render(){
+
+        const {message: { systemMsgList }} = this.props;
+        let title = '祝各位游戏愉快, 有问题可以联系客服微信!';
+        if(systemMsgList.length > 0){
+            //title = systemMsgList[0].title;
+        }
+
         return (
             <Image source={require('../asset/bg2.png')} style={styles.container}>
                 <ScrollView>
@@ -52,15 +78,12 @@ class Index extends Component{
                         </Carousel>
                     </View>
                     <View style={styles.news}>
-                        <View style={styles.newsLeft}>
-                            <Text style={styles.newsText}>通知</Text>
+                        <View style={{paddingLeft: 20, paddingRight: 20, borderRightWidth: 2,borderRightColor: '#EED650',
+                        height: '100%',justifyContent:'center',alignItems: 'center'}}>
+                            <Text style={{color: '#EED650', fontSize: 18,width: 40}}>最新公告</Text>
                         </View>
-                        <View style={[styles.newsRight,{padding: 10}]}>
-                            <View><Text style={{color: '#EED650',fontSize: 12}}>最新公告:</Text></View>
-                            <View style={{height: 35,overflow: 'hidden'}}>
-                                <Text  style={{color: 'white', lineHeight: 35, fontSize: 16}}
-                                >国庆期间余额宝收益和转出到账时间通知：由于国庆到来，余额宝收益到账将延迟，特此通知</Text>
-                            </View>
+                        <View style={styles.newContent}>
+                            <Text style={{color: 'white', fontSize: 16}}>{title}</Text>
                         </View>
                     </View>
                     <View style={styles.bottom}>
@@ -91,11 +114,11 @@ class Index extends Component{
     }
 }
 
-const pageHeight = Common.window.height-100;
+const pageHeight = Common.window.height-95;
 
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
+        width: width,
         height: pageHeight
     },
     carousel: {
@@ -103,43 +126,28 @@ const styles = StyleSheet.create({
         borderBottomColor: 'black',
     },
     actImage: {
-        width: Common.window.width,
+        width: width,
         height: pageHeight*1.8/6,
     },
     news:{
         marginTop: 10,
-        width: Common.window.width,
+        width: width-30,
         height: pageHeight*1/6-10,
-        flexDirection: 'row',
         backgroundColor:'transparent',
-        borderWidth: 4,
+        borderWidth: 3,
         borderColor: '#EED650',
-        borderRadius: pageHeight*1/6/2,
+        marginHorizontal: 15,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems:'center'
+        //borderRadius: pageHeight*1/6/2,
     },
-    newsLeft: {
-        flex: 2,
-        borderWidth: 4,
-        borderColor: '#EED650',
-        borderTopLeftRadius: pageHeight*1.1/6/2,
-        borderTopRightRadius: pageHeight*1.1/6/2,
-        borderBottomLeftRadius: pageHeight*1.1/6/2,
-        borderBottomRightRadius: pageHeight*1.1/6/2,
-        borderLeftWidth: 0,
-        borderTopWidth: 0,
-        borderBottomWidth: 0,
-        paddingTop: 10,
-        paddingLeft: 5,
-    },
-    newsRight: {
-        flex: 6,
-    },
-    newsText: {
-        color: 'white',
-        padding: 20,
-        fontSize: 16
+    newContent: {
+        paddingLeft: 20,
+        flex: 1,
     },
     bottom: {
-        width: Common.window.width,
+        width: width,
         height: pageHeight*3.2/6,
         flexDirection: 'row'
     },
@@ -182,8 +190,8 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = () => {
-    return {};
+const mapStateToProps = ({ message }) => {
+    return { message };
 };
 
 export default connect(mapStateToProps)(Index);

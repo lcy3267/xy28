@@ -26,6 +26,10 @@ class PersonSet extends Component{
         this.state = {};
     }
 
+    componentWillMount() {
+        this.props.dispatch({type: 'user/queryWithdrawPwd'});
+    }
+
     render(){
         return (
             <View style={styles.container}>
