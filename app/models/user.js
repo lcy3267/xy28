@@ -66,8 +66,7 @@ export default {
                 errCallback && errCallback(rs);
             }
         },
-        *updateMsg({}, params){
-            const {put} = params;
+        *updateMsg({params}, {put}){
             yield put({
                 type: 'message/messageList',
                 params: {

@@ -50,7 +50,12 @@ class Withdraw extends Component{
         const card = cards[index];
 
         if(!money || !withdrawPwd){
-            Toast.info('请填写提现金额和提现密码', 2, null, false);
+            myToast('请填写提现金额和提现密码');
+            return;
+        }
+
+        if(money < 100){
+            myToast('提现金额不能小于100!');
             return;
         }
 
@@ -79,13 +84,17 @@ class Withdraw extends Component{
     }
 
     moneyChange = (v)=>{
-        const { user: {info: {integral}} } = this.props;
-        if(integral < v){
-            this.setState({money: integral+''});
-            Toast.info('提现金额不足', 2, null, false);
-        }else{
-            this.setState({money: v});
+        const reg = /^d+$/;
+        if(reg.test(v)){
+            const { user: {info: {integral}} } = this.props;
+            if(integral < v){
+                this.setState({money: integral+''});
+                Toast.info('提现金额不足', 2, null, false);
+            }else{
+                this.setState({money: v});
+            }
         }
+
     }
 
     render(){

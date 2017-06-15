@@ -684,7 +684,9 @@ class PopupContent extends Component {
     }
 
     moneyChange(betMoney){
-        this.setState({betMoney});
+        const reg = /^\d+$/;
+        if(reg.test(betMoney))
+            this.setState({betMoney});
     }
 
     updatePosition(hasPosition){
@@ -693,10 +695,6 @@ class PopupContent extends Component {
 
     callback(key) {
         console.log('onChange', key);
-    }
-
-    handleTabClick(key) {
-        console.log('onTabClick', key);
     }
 
     tabMove = (key)=>{
@@ -787,12 +785,12 @@ class PopupContent extends Component {
                         <Text style={{color: 'white',}}>赔率说明</Text>
                     </Button>
                     <Button
-                        onClick={()=>{this.moneyChange(10+'')}}
+                        onClick={()=>{this.moneyChange(10)}}
                         size="small" style={[styles.ruleButton,{marginLeft: 90}]}>
                         <Text style={{color: 'black'}}>最小投注</Text>
                     </Button>
                     <Button
-                        onClick={()=>{this.moneyChange(this.state.betMoney*2+'')}}
+                        onClick={()=>{this.moneyChange(+this.state.betMoney*2)}}
                         size="small" style={styles.ruleButton}>
                         <Text style={{color: 'black'}}>双倍投注</Text>
                     </Button>
