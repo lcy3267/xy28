@@ -17,6 +17,7 @@ import { connect } from 'dva/mobile';
 import { List, Toast } from 'antd-mobile';
 import Common from '../../common/index';
 const Item = List.Item;
+const {MyIcon} = Common;
 
 class PersonSet extends Component{
     // 构造
@@ -35,23 +36,23 @@ class PersonSet extends Component{
             <View style={styles.container}>
                 <List>
                     <Item
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        thumb={MyIcon('#FDA951','ios-apps')}
                         arrow="horizontal"
                         onClick={Actions.setWithdrawPwd}
                     >提现密码</Item>
                     <Item
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        thumb={MyIcon('#5BBEF8','md-cog')}
                         arrow="horizontal"
                         onClick={Actions.setLoginPwd}
                     >修改密码</Item>
                     <Item
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        thumb={MyIcon('#CE6C87','ios-briefcase')}
                         arrow="horizontal"
                         onClick={Actions.bindBank}
                     >绑定银行卡</Item>
                     <Item style={{backgroundColor: '#F5F5F9', height: 20}}/>
                     <Item
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        thumb={MyIcon('gray','ios-cloud-download')}
                         arrow="horizontal"
                         onClick={()=>{
                             Alert.alert('','确定退出登录吗?',[

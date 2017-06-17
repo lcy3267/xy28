@@ -1,10 +1,3 @@
-/**
- * Created by chengyuan on 2017/3/9.
- */
-/**
- * Created by chengyuan on 2017/3/5.
- */
-
 import React, { Component } from 'react';
 import {
     StyleSheet,

@@ -16,6 +16,9 @@ import { connect } from 'dva';
 import { List, Button } from 'antd-mobile';
 import Common from '../../common/index';
 const Item = List.Item;
+const {height, width, paddingTop} = Common.window;
+const {MyIcon} = Common;
+
 
 class Recharge extends Component{
     // 构造
@@ -30,34 +33,31 @@ class Recharge extends Component{
     }
 
     render(){
+        const {from} = this.props;
+
         return (
-            <View style={styles.container}>
+            <View style={[styles.container,{height: from?height:height-50,paddingTop:from?paddingTop:0}]}>
                 <List renderHeader={() => '线上充值'}>
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
                         arrow="horizontal"
-                        onClick={() => {}}
+                        onClick={Actions.lineRecharge}
                     >支付宝</Item>
                     <Item
-                        onClick={() => {}}
-                        thumb="http://bpic.588ku.com//element_origin_min_pic/17/01/14/c17b43cc4e79ff8b846a1337b7b12864.jpg"
+                        onClick={Actions.lineRecharge}
+                        thumb={MyIcon('#71CA58','ios-chatbubbles')}
                         arrow="horizontal"
                     >微信</Item>
-                    <View style={{width: '100%',justifyContent: 'center',alignItems: 'center',height: 50}}>
-                        <Button type="primary" inline size="small" style={{width: 150,height: 30}}>
-                            <Text>去支付</Text>
-                        </Button>
-                    </View>
                 </List>
                 <List renderHeader={() => '线下充值'}>
                     <Item
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        thumb={MyIcon('#38A9ED','md-card')}
                         arrow="horizontal"
                         onClick={() => {Actions.selectAlipayAccount()}}
                     >支付宝转账</Item>
                     <Item
                         onClick={() => {}}
-                        thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
+                        thumb={MyIcon('#213C7F','md-card')}
                     >银行转账</Item>
                 </List>
 
@@ -76,12 +76,9 @@ class Recharge extends Component{
     }
 }
 
-const pageHeight = Common.window.height - 50;
-
 const styles = StyleSheet.create({
     container: {
-        width: Common.window.width,
-        height: pageHeight,
+        width: width,
         backgroundColor: '#F5F5F9'
     },
     bottomView: {

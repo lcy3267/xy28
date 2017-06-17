@@ -6,7 +6,6 @@ import Config from '../config/index';
 let socket = {};
 
 export default connectSocket = (dispatch, token)=>{
-    console.log('----------',dispatch);
     if(!socket.id){
         //链接房间
         socket = SocketIOClient(Config.apiDomain+'/app', {jsonp: false});
@@ -19,6 +18,10 @@ export default connectSocket = (dispatch, token)=>{
 
         socket.on('newMsg', ()=>{
             dispatch({type: 'user/updateMsg'});
+        });
+    }else if(socket){
+        socket.on('login',()=>{
+            console.log('connetd success');
         });
     }
 }

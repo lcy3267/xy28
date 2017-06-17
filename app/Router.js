@@ -12,8 +12,10 @@ import BindBank from './routes/person/BindBank';
 import SetWithdrawPwd from './routes/person/SetWithdrawPwd';
 import SetLoginPwd from './routes/person/SetLoginPwd';
 import MyBankCard from './routes/person/MyBankCard';
+import Recharge from './routes/recharge/Recharge';
 import SelectAlipayAccount from './routes/recharge/SelectAlipayAccount';
 import AlipayRecharge from './routes/recharge/AlipayRecharge';
+import LineRecharge from './routes/recharge/LineRecharge';
 import Withdraw from './routes/withdraw/Withdraw';
 import MessageDetail from './routes/message/Detail';
 import IntegralChangeRecord from './routes/records/IntegralChangeRecord';
@@ -33,8 +35,10 @@ const RouterComponent = () => {
           {SetScene('roomList', '房间列表', RoomList)}
           {SetScene('register', '注册', Register)}
           {SetScene('personSet', '设置', PersonSet)}
+          {SetScene('recharge', '选择支付宝账号', Recharge)}
           {SetScene('selectAlipayAccount', '选择支付宝账号', SelectAlipayAccount)}
           {SetScene('alipayRecharge', '支付宝转账', AlipayRecharge)}
+          {SetScene('lineRecharge', '线上充值', LineRecharge)}
           {SetScene('wallet', '钱包', Wallet)}
           {SetScene('bindBank', '设置', BindBank)}
           {SetScene('setWithdrawPwd', '提现密码', SetWithdrawPwd)}

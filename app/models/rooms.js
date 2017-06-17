@@ -7,6 +7,7 @@ export default {
 
     state: {
         rooms: [],
+        modalVisible: false
     },
 
     effects: {
@@ -22,11 +23,17 @@ export default {
                 callback && callback(rs.room);
             }
         },
+        *updateModal({modalVisible}, {put}){
+            yield put({type: 'setModalStatus', modalVisible});
+        }
     },
 
     reducers: {
         setRooms(state, {rooms}){
             return {...state, rooms}
+        },
+        setModalStatus(state, {modalVisible}){
+            return {...state, modalVisible}
         }
     },
 }

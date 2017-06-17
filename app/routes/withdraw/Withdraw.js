@@ -84,7 +84,7 @@ class Withdraw extends Component{
     }
 
     moneyChange = (v)=>{
-        const reg = /^d+$/;
+        const reg = /^\d*$/;
         if(reg.test(v)){
             const { user: {info: {integral}} } = this.props;
             if(integral < v){

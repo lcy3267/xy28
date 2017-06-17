@@ -17,9 +17,9 @@ import {
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 import { List, Toast } from 'antd-mobile';
-import Icon from 'react-native-vector-icons/Ionicons';
 import Common from '../../common/index';
 const Item = List.Item;
+const {MyIcon} = Common;
 
 class My extends Component{
     // 构造
@@ -30,15 +30,6 @@ class My extends Component{
     render(){
 
         let {user: {info}} = this.props;
-
-        const iconStyle = {
-            marginRight: 10,
-        }
-
-        const MyIcon = (bjColor,icon)=><View style={{width: 22,height: 22, borderRadius: 20,marginRight: 10,
-         backgroundColor: bjColor,alignItems: 'center',justifyContent:'center'}}>
-            <Icon name={icon} color='white' size={15}/>
-        </View>;
 
         return (
             <View style={styles.container}>

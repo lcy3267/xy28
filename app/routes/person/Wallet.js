@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { List, Toast } from 'antd-mobile';
 import Common from '../../common/index';
 const Item = List.Item;
+const {MyIcon} = Common;
 
 class Wallet extends Component{
     // 构造
@@ -33,9 +35,10 @@ class Wallet extends Component{
             <View style={styles.container}>
                 <View style={{flexDirection: 'row',padding: 10,backgroundColor: 'white',marginBottom: 20}}>
                     <View style={{flex: 1}}>
-                        <Image source={{uri: 'https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png'}}
-                               style={{width: 68,height: 68}}
-                        />
+                        <View style={{width: 60,height: 60, borderRadius: 30,
+                backgroundColor: '#38A9ED',alignItems: 'center',justifyContent:'center'}}>
+                            <Icon name='ios-briefcase' color='white' size={40}/>
+                        </View>
                     </View>
                     <View style={{flex: 3,justifyContent: 'center'}}>
                         <Text style={{height: 25}}>钱包余额</Text>
@@ -44,13 +47,13 @@ class Wallet extends Component{
                 </View>
                 <List>
                     <Item
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        thumb={MyIcon('#213C7F','md-card')}
                         arrow="horizontal"
                         onClick={Actions.myBankCard}
                     >我的银行卡</Item>
                     <Item
-                        onClick={() => {}}
-                        thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
+                        onClick={()=>{Actions.recharge({from: 'wallet'})}}
+                        thumb={MyIcon('red','md-archive')}
                     >充值</Item>
                     <Item
                         thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
@@ -59,10 +62,10 @@ class Wallet extends Component{
                     >提现</Item>
                     <Item
                         onClick={() => {}}
-                        thumb="https://zos.alipayobjects.com/rmsportal/UmbJMbWOejVOpxe.png" arrow="horizontal"
+                        thumb={MyIcon('#FC3D39','ios-pulse')}
                     >充值记录</Item>
                     <Item
-                        thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png"
+                        thumb={MyIcon('#FDA951','ios-pulse')}
                         arrow="horizontal"
                         onClick={Actions.withdrawRecord}
                     >提现记录</Item>

@@ -22,14 +22,10 @@ import Common from '../common/index';
 import config,{ combineRates } from '../config';
 import { getDate, GetDateStr } from '../common/FormatUtil'
 import * as Storage from '../service/storage';
-import {storageKey} from '../config';
+import {storageKey} from '../config'
+const {myToast} = Common;
 
 const {height, width, paddingTop} = Common.window;
-
-
-const showToastNoMask = (message) =>{
-    Toast.info(message, 2, null, false);
-}
 
 class Room extends Component{
     // 构造
@@ -63,13 +59,14 @@ class Room extends Component{
             dataSource: new ListView.DataSource({
                 rowHasChanged: (p1, p2) => p1 !== p2,
             }),
+            visible: true,
         };
     }
 
     componentWillMount() {
         let {user, dispatch} = this.props;
         if(!user.info){
-            showToastNoMask('请先进行登录');
+            myToast('请先进行登录');
             Actions.pop();
             return;
         }
@@ -131,7 +128,7 @@ class Room extends Component{
             this.socket.on('login', (data) => {
                 if(data.rs && data.rs == 'login err'){
                     Actions.pop();
-                    showToastNoMask('加载异常..');
+                    myToast('加载异常..');
                     return;
                 }
                 Toast.hide();
@@ -144,6 +141,21 @@ class Room extends Component{
                 }
             });
 
+            this.socket.on('updateRoomInfo', (data) => {
+                if(data.roomId == this.roomId){
+                    dispatch({type: 'rooms/getRooms'});
+                    this.loadRoomInfo((room)=>{
+                        if(room.status == -1){
+                            myToast('抱歉, 该房间已被管理员关闭, 请进入其他房间进行游戏');
+                            setTimeout(()=>{
+                                Actions.pop();
+                            },1000);
+                        }
+                    });
+                }
+            });
+
+
             // 监听下注信息
             this.socket.on('bet', (result) => {
                 let messages = this.state.messages;
@@ -151,7 +163,7 @@ class Room extends Component{
                 if(result.err_code && result.err_code == -1){
                     let sysMsg = {
                         type: -1,
-                        content: '您已经被管理员禁言下注'
+                        content: '您已经被管理员禁言下注,如有疑问请联系客服.'
                     };
                     messages.push(sysMsg);
                 }else{
@@ -220,7 +232,7 @@ class Room extends Component{
             //监听赔率变动
             this.socket.on('updateRules', (rule)=>{
                 Toast.info('管理修改了赔率设置!!', 4);
-                dispatch({type: 'gameRules/list'});
+                this.loadRoomGameRules()
             });
 
             //心跳包
@@ -243,7 +255,7 @@ class Room extends Component{
             params: { roomId: this.roomId },
             callback: (room)=>{
                 this.setState({room},()=>{
-                    callback && callback();
+                    callback && callback(room);
                 });
             }
         })
@@ -316,7 +328,7 @@ class Room extends Component{
     bottomPour(betType, betMoney, playType){
 
         if(this.state.integral < betMoney){
-            showToastNoMask('余额不足!');
+            myToast('余额不足!');
             return;
         }
 
@@ -358,7 +370,7 @@ class Room extends Component{
     sendMessage(e){
 
         if(this.state.room.is_speak == -1) {
-            showToastNoMask('该房间已被禁言!');
+            myToast('该房间已被禁言!');
             return;
         }
 
@@ -379,11 +391,11 @@ class Room extends Component{
 
         let cancel = ()=>{
             if(this.state.opening){
-                showToastNoMask('已封盘不能取消!');
+                myToast('已封盘不能取消!');
                 return;
             }
             if(bet.serial_number != this.state.serial_number+1){
-                showToastNoMask('不能取消往期投注!');
+                myToast('不能取消往期投注!');
                 return;
             }
             this.props.dispatch({
@@ -393,7 +405,7 @@ class Room extends Component{
                     let cancelBets = this.state.cancelBets;
                     cancelBets.push(cancelIndex);
                     this.setState({cancelBets});
-                    showToastNoMask('成功取消下注!');
+                    myToast('成功取消下注!');
                 }
             })
         }
@@ -407,8 +419,36 @@ class Room extends Component{
 
     }
 
+    onSelect = (value) => {
+        this.hide();
+        const {title} = this.props;
+        let roomType = title.indexOf('北京') > -1 ? 1 : 2;
+        if(value == 1) Actions.betRecord();
+        if(value == 2) {
+            Actions.playExplain({infoType: roomType})
+        };
+        if(value == 3) {
+            Actions.trend({roomType});
+        };
+    };
+
+    hide = ()=>{
+        this.props.dispatch({
+            type: 'rooms/updateModal',
+            modalVisible: false,
+        })
+    }
+
     render(){
         const { messages, lottery, isClose, opening} = this.state;
+
+        let {rooms: {modalVisible}} = this.props;
+
+        const color = '#3399FF';
+        const textStyle = {
+            color: '#3399FF',
+            fontSize: 15,
+        }
 
         return (
            <View style={styles.container}>
@@ -447,6 +487,24 @@ class Room extends Component{
                        </View>
                    </View>
                </KeyboardAvoidingView>
+               {modalVisible?//transparent
+                   <TouchableOpacity onPress={this.hide}
+                                     style={{position: 'absolute',height,width, backgroundColor: 'transparent', zIndex: 999}}>
+                       <View style={{left: width-140,top: Platform.OS == 'ios'?66:50}}>
+                           <TouchableOpacity onPress={()=>{this.onSelect(1)}} activeOpacity={1} key="4" style={styles.itemModel}>
+                               <Icon name="ios-recording-outline" color={color} size={18} style={{marginRight: 10}}/>
+                               <Text style={textStyle}>投注记录</Text>
+                           </TouchableOpacity>
+                           <TouchableOpacity onPress={()=>{this.onSelect(2)}} activeOpacity={1} key="5"  style={styles.itemModel}>
+                               <Icon name="ios-game-controller-b-outline" color={color} size={18} style={{marginRight: 10}}/>
+                               <Text style={textStyle}>玩法介绍</Text>
+                           </TouchableOpacity>
+                           <TouchableOpacity onPress={()=>{this.onSelect(3)}} activeOpacity={1} style={[styles.itemModel,{borderWidth: 0}]}>
+                               <Icon name="md-trending-up" color={color} size={18} style={{marginRight: 10}}/>
+                               <Text style={textStyle}>走势图</Text>
+                           </TouchableOpacity>
+                       </View>
+                   </TouchableOpacity>:null}
            </View>
         )
     }
@@ -672,6 +730,7 @@ class PopupContent extends Component {
     // 构造
     constructor(props) {
         super(props);
+
         this.moneyChange = this.moneyChange.bind(this);
         // 初始状态
         this.state = {
@@ -684,7 +743,7 @@ class PopupContent extends Component {
     }
 
     moneyChange(betMoney){
-        const reg = /^\d+$/;
+        const reg = /^\d*$/;
         if(reg.test(betMoney))
             this.setState({betMoney});
     }
@@ -697,10 +756,10 @@ class PopupContent extends Component {
         console.log('onChange', key);
     }
 
-    tabMove = (key)=>{
-        this.setState({
-            tabKey: key,
-        });
+    tabMove = (i)=>{
+        if(Platform.OS == 'ios'){
+            this.refs.carousel.updateIndex({x: width*i});
+        }
     }
 
     render() {
@@ -751,15 +810,27 @@ class PopupContent extends Component {
             singleRuleView.push(<View key={index} style={{width: '100%',flexDirection: 'row',flexWrap: 'wrap'}}>{arr}</View>)
         });
 
+        console.log(this.state.tabKey)
+
         return (
             <View style={{backgroundColor: '#48B0FF', paddingBottom:this.state.hasPosition && Platform.OS == 'ios'?220:0}}>
-                <Icon onClick={()=>{this.tabMove(0)}}
-                      name='md-arrow-dropleft' size={30}
-                      style={{color: 'white',position: 'absolute', top: 10, left: 60}}/>
-                <Icon onPress={()=>{this.tabMove(1)}}
-                      name='md-arrow-dropright' size={30}
-                      style={{color: 'white',position: 'absolute', top: 10, right: 60}}/>
-                <Carousel dots={false} selectedIndex={0}>
+                <TouchableOpacity onPress={()=>{this.tabMove(0)}} activeOpacity={0.8}
+                                  style={{width: 50,height: 40,position: 'absolute',
+                 top: 10, left: 60, zIndex: 999}}>
+                    <Icon
+                          name='md-arrow-dropleft' size={30}
+                          style={{color: 'white',}}/>
+                </TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.8} onPress={()=>{this.tabMove(1)}}
+              style={{width: 50,height: 40,position: 'absolute', top: 10,
+                 right: 20, zIndex: 999}}>
+                    <Icon
+                          name='md-arrow-dropright' size={30}
+                          style={{color: 'white',}}/>
+                </TouchableOpacity>
+
+
+                <Carousel ref="carousel" dots={false} selectedIndex={this.state.playType}>
                     <View key="1">
                         <View style={{height: 50,justifyContent: 'center',alignItems: 'center'}}>
                             <Text style={{color: 'white'}}>大小单双</Text>
@@ -785,12 +856,12 @@ class PopupContent extends Component {
                         <Text style={{color: 'white',}}>赔率说明</Text>
                     </Button>
                     <Button
-                        onClick={()=>{this.moneyChange(10)}}
+                        onClick={()=>{this.moneyChange(10+'')}}
                         size="small" style={[styles.ruleButton,{marginLeft: 90}]}>
                         <Text style={{color: 'black'}}>最小投注</Text>
                     </Button>
                     <Button
-                        onClick={()=>{this.moneyChange(+this.state.betMoney*2)}}
+                        onClick={()=>{this.moneyChange(+this.state.betMoney*2+'')}}
                         size="small" style={styles.ruleButton}>
                         <Text style={{color: 'black'}}>双倍投注</Text>
                     </Button>
@@ -948,11 +1019,24 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: 'white',
         textAlign: 'center'
-    }
+    },
+
+    itemModel: {
+        flexDirection: 'row',
+        padding: 0,
+        width: 120,
+        height: 40,
+        marginLeft: 10,
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ECECEC',
+        backgroundColor: 'white',
+        paddingLeft: 10
+    },
 });
 
-const mapStateToProps = ({gameRules,user}) => {
-    return {gameRules,user};
+const mapStateToProps = ({gameRules,user,rooms}) => {
+    return {gameRules,user,rooms};
 };
 
 export default connect(mapStateToProps)(Room);

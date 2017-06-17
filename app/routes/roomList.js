@@ -15,6 +15,7 @@ import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
 import { Carousel, WhiteSpace, WingBlank, Toast } from 'antd-mobile';
 import Common from '../common/index';
+const { myToast } = Common;
 
 class RoomList extends Component{
     // 构造
@@ -74,7 +75,7 @@ class RoomList extends Component{
         const {room_type, title, id, status} = room;
 
         if(status == -1) {
-            Toast.info('该房间已暂时关闭,请进入其他房间进行游戏', 4);
+            myToast('该房间已暂时关闭,请进入其他房间进行游戏', 4);
             return;
         }
 
