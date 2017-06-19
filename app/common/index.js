@@ -22,4 +22,12 @@ export default {
             </View>
         )
     },
+    defaultHead: require('../asset/person.jpg'),
+    cutQNImg: (img, width) => {
+        if (img && img.indexOf('imageView2') == -1) {
+            let postfix = `?imageView2/0/w/${width}`;
+            return img + postfix;
+        }
+        return img;
+    }
 }

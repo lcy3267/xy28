@@ -52,6 +52,7 @@ class Wallet extends Component{
                         onClick={Actions.myBankCard}
                     >我的银行卡</Item>
                     <Item
+                        arrow="horizontal"
                         onClick={()=>{Actions.recharge({from: 'wallet'})}}
                         thumb={MyIcon('red','md-archive')}
                     >充值</Item>
@@ -61,7 +62,8 @@ class Wallet extends Component{
                         onClick={Actions.withdraw}
                     >提现</Item>
                     <Item
-                        onClick={() => {}}
+                        arrow="horizontal"
+                        onClick={Actions.rechargeRecord}
                         thumb={MyIcon('#FC3D39','ios-pulse')}
                     >充值记录</Item>
                     <Item

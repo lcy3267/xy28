@@ -9,11 +9,12 @@ import {
 } from 'react-native';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'dva/mobile';
-import { Carousel, WhiteSpace, WingBlank, Toast } from 'antd-mobile';
-import Common  from '../common/index';
-import TableHeader from '../components/TableHeader';
+import { Toast } from 'antd-mobile';
+import Common  from '../../common/index';
+import { getDate } from '../../common/FormatUtil';
+import TableHeader from '../../components/TableHeader';
 
-class BetRecord extends Component{
+class RechargeRecord extends Component{
     // 构造
     constructor(props) {
         super(props);
@@ -36,14 +37,12 @@ class BetRecord extends Component{
 
     loadRecord = (callback)=>{
         if(this.loading) return;
-        const {roomType} = this.props;
         this.loading = true;
         this.props.dispatch({
-            type: 'records/trend',
+            type: 'records/rechargeRecord',
             params: {
                 pageIndex: this.state.pageIndex,
                 pageSize: 20,
-                type: roomType,
             },
             callback: (records)=>{
                 this.loading = false;
@@ -72,8 +71,7 @@ class BetRecord extends Component{
 
         return (
             <View style={styles.container}>
-                <TableHeader type="trend" 
-                             headers={['期号','值','大','小','单','双','大单','小单','大双','小双']}/>
+                <TableHeader headers={['充值时间','充值金额','充值类型','状态']}/>
                 <View style={{flex: 1}}>
                     {records.length>0?<ListView
                         ref='mylistView'
@@ -89,65 +87,51 @@ class BetRecord extends Component{
     }
 
     _renderRow(record, sectionID, rowID){
-
-        let {serial_number, sum_number} = record;
-
-        const {hasMax, hasDouble} = this.getResult(sum_number);
-
-        const red = '#E1000B';
-        const blue = '#259CEB';
-
+        let {created_at, money, recharge_type, status} = record;
         return(
             <View style={styles.content}>
-                <View style={[styles.filed,{flex: 2}]}>
-                    <Text style={{color: 'black'}}>{serial_number}</Text>
+                <View style={styles.filed}>
+                    <Text style={styles.contentText}>{getDate(created_at)}</Text>
                 </View>
                 <View style={styles.filed}>
-                    <Text style={[styles.contentText,{color: '#2A85D2'}]}>{sum_number}</Text>
+                    <Text style={styles.contentText}>{money}</Text>
                 </View>
-                <View style={[styles.filed,{backgroundColor: hasMax?red:'white'}]}>
-                    <Text style={styles.contentText}>{hasMax?'大':''}</Text>
+                <View style={styles.filed}>
+                    <Text style={styles.contentText}>{this.formatType(recharge_type)}</Text>
                 </View>
-                <View style={[styles.filed,{backgroundColor: !hasMax?blue:'white'}]}>
-                    <Text style={styles.contentText}>{!hasMax?'小':''}</Text>
-                </View>
-                <View style={[styles.filed,{backgroundColor: !hasDouble?blue:'white'}]}>
-                    <Text style={styles.contentText}>{!hasDouble?'单':''}</Text>
-                </View>
-                <View style={[styles.filed,{backgroundColor: hasDouble?red:'white'}]}>
-                    <Text style={styles.contentText}>{hasDouble?'双':''}</Text>
-                </View>
-                <View style={[styles.filed,{backgroundColor: hasMax&&!hasDouble?blue:'white'}]}>
-                    <Text style={styles.contentText}>{hasMax&&!hasDouble?'大单':'white'}</Text>
-                </View>
-                <View style={[styles.filed,{backgroundColor: hasMax&&hasDouble?red:'white'}]}>
-                    <Text style={styles.contentText}>{hasMax&&hasDouble?'大双':''}</Text>
-                </View>
-                <View style={[styles.filed,{backgroundColor: !hasMax&&!hasDouble?blue:'white'}]}>
-                    <Text style={styles.contentText}>{!hasMax&&!hasDouble?'小单':'white'}</Text>
-                </View>
-                <View style={[styles.filed,{backgroundColor: !hasMax&&hasDouble?red:'white'}]}>
-                    <Text style={styles.contentText}>{!hasMax&&hasDouble?'小双':'white'}</Text>
+                <View style={styles.filed}>
+                    <Text style={styles.contentText}>{this.formatState(status)}</Text>
                 </View>
             </View>
         )
     }
 
-    getResult(sum){
-        let hasMax = true;
-        let hasDouble = false;
-        if(sum <= 13){
-            hasMax = false;
+    formatState(status){
+        let str = '';
+        switch (status){
+            case -1: str = '无效'; break;
+            case 1: str = '待审核'; break;
+            case 2: str = '已充值'; break;
         }
-        if(sum % 2 == 0){
-            hasDouble = true;
+        return str;
+    }
+
+    formatType(type){
+        let str = '';
+        switch (type){
+            case 1: str = '支付宝转账'; break;
+            case 2: str = '银行转账'; break;
+            case 3: str = '支付宝充值'; break;
+            case 4: str = '微信充值'; break;
+            case 6: str = '管理员充值'; break;
         }
-        return {hasMax, hasDouble};
+        return str;
     }
 }
 
 const {height, width, paddingTop} = Common.window;
 const pageHeight = height + 50;
+
 
 const styles = StyleSheet.create({
     container: {
@@ -158,6 +142,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         backgroundColor: '#E9E9E9',
         paddingBottom: 55,
+    },
+    header: {
+        flexDirection: 'row',
+        height: 32,
+        alignItems: 'center',
+        backgroundColor: '#3399FF',
     },
     filed: {
         flex: 1,
@@ -179,9 +169,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     contentText: {
-        color: 'white',
+        color: 'black',
     }
 });
 
-export default connect()(BetRecord);
+
+export default connect()(RechargeRecord);
 

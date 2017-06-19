@@ -47,6 +47,14 @@ export default {
                 errCallback && errCallback(rs);
             }
         },
+        *rechargeRecord({params, callback, errCallback}){
+            let rs = yield sendRequest(api.recharge.rechargeRecord, params);
+            if(rs && rs.err_code == 0 ){
+                callback && callback(rs.records);
+            }else{
+                errCallback && errCallback(rs);
+            }
+        },
         *trend({params, callback, errCallback}){
             let rs = yield sendRequest(api.lottery.records, params);
             if(rs && rs.err_code == 0 ){

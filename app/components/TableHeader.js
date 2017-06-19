@@ -20,7 +20,7 @@ export default class TableHeader extends Component{
         return (
             <View style={styles.header}>
                 {headers.map((header, i)=>{
-                    let myStyle = type && type == 'trend'  && i == 0? {flex: 2}:{};
+                    let myStyle = type && type == 'trend' ? {backgroundColor: '#364E99',flex: i == 0? 2 : 1}:{};
                     return (
                         <View key={i} style={[styles.filed, myStyle]}>
                             <Text style={styles.headerText}>{header}</Text>

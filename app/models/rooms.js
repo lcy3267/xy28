@@ -25,7 +25,19 @@ export default {
         },
         *updateModal({modalVisible}, {put}){
             yield put({type: 'setModalStatus', modalVisible});
-        }
+        },
+        *rollbackRules({callback},{put}){
+            let rs = yield sendRequest(api.rooms.rollbackRules);
+            if(rs && rs.err_code == 0){
+                callback && callback(rs.rules);
+            }
+        },
+        *specialGameRuleInfo({params, callback},{put}){
+            let rs = yield sendRequest(api.rooms.specialGameRuleInfo, params);
+            if(rs && rs.err_code == 0){
+                callback && callback(rs.rules);
+            }
+        },
     },
 
     reducers: {

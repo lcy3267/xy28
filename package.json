@@ -18,6 +18,8 @@
     "react": "15.4.2",
     "react-dom": "^15.4.2",
     "react-native": "^0.42.2",
+    "react-native-image-picker": "^0.26.3",
+    "react-native-qiniu": "^0.2.2",
     "react-native-router-flux": "^3.38.0",
     "react-native-scrollable-tab-view": "^0.7.2",
     "react-native-vector-icons": "^4.0.0",

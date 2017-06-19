@@ -6,6 +6,8 @@ export default  {
 		bindBank: 'POST /users/bindBank',
 		getBankCards: 'GET /users/bankCards',
 		getUserInfo: 'GET /users/getUserInfo',
+		updateUserLogo: 'PUT /users/updateUserLogo',
+		updateUserName: 'PUT /users/updateUserName',
 	},
 	withdraw: {
 		queryWithdrawPwd: 'GET /withdraw/queryWithdrawPwd',
@@ -30,10 +32,13 @@ export default  {
 	recharge: {
 		getCollectionAccounts: 'GET /recharge/getCollectionAccounts',
 		doAlipayRecharge: 'POST /recharge/alipayRecharge',
+		rechargeRecord: 'GET /recharge/rechargeRecord',
 	},
 	rooms: {
 		getRooms: 'GET /system/rooms',
 		getRoomInfo: 'GET /system/roomInfo',
+		rollbackRules: 'GET /system/rollbackRules',
+		specialGameRuleInfo: 'GET /gameRules/specialGameRuleInfo',
 	},
 	message: {
 		systemList: 'GET /message/systemList',

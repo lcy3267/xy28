@@ -153,6 +153,18 @@ export default {
                 errCallback && errCallback(rs);
             }
         },
+        *updateUserLogo({params, callback}){
+            let rs = yield sendRequest(api.user.updateUserLogo, params);
+            if(rs && rs.err_code == 0){
+                callback && callback();
+            }
+        },
+        *updateUserName({params, callback}){
+            let rs = yield sendRequest(api.user.updateUserName, params);
+            if(rs && rs.err_code == 0){
+                callback && callback();
+            }
+        }
     },
 
     reducers: {

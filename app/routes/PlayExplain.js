@@ -79,7 +79,6 @@ const {height, width, paddingTop} = Common.window;
 const styles = StyleSheet.create({
     container: {
         width: width,
-        height: height,
         flexDirection: 'column',
         paddingTop: paddingTop,
         backgroundColor: '#F3F3F3',

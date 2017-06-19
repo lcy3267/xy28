@@ -23,7 +23,7 @@ import config,{ combineRates } from '../config';
 import { getDate, GetDateStr } from '../common/FormatUtil'
 import * as Storage from '../service/storage';
 import {storageKey} from '../config'
-const {myToast} = Common;
+const {myToast, defaultHead, cutQNImg} = Common;
 
 const {height, width, paddingTop} = Common.window;
 
@@ -568,6 +568,12 @@ class Room extends Component{
     _renderRow(item, sectionID, rowID){
         let {user} = this.props;
         let content = null;
+
+        item.logo = defaultHead;
+        if(item.user && item.user.avatar_picture_url){
+            item.logo = {uri: cutQNImg(item.user.avatar_picture_url, 100)}
+        }
+
         if(item.type == 0){
             content = item.user.user_id !== user.info.user_id?this.letfMessageView(item):this.rightMessageView(item);
         }else if(item.type == -1){
@@ -600,7 +606,7 @@ class Room extends Component{
             <View style={styles.item}>
                 <View>
                     <TouchableOpacity style={styles.imageView}>
-                        <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
+                        <Image style={styles.itemImage} source={item.logo}/>
                     </TouchableOpacity>
                 </View>
                 <View style={{flexDirection: 'column', paddingRight: 110}}>
@@ -628,7 +634,7 @@ class Room extends Component{
                 </View>
                 <View>
                     <TouchableOpacity style={styles.imageView}>
-                        <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
+                        <Image style={styles.itemImage} source={item.logo}/>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -650,7 +656,7 @@ class Room extends Component{
                 <View style={styles.item}>
                     <View>
                         <TouchableOpacity style={styles.imageView}>
-                            <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
+                            <Image style={styles.itemImage} source={bet.logo}/>
                         </TouchableOpacity>
                     </View>
                     <View style={{flexDirection: 'column',width: 220}}>
@@ -712,7 +718,7 @@ class Room extends Component{
                         </View>
                         <View>
                             <TouchableOpacity style={styles.imageView}>
-                                <Image style={styles.itemImage} source={require('../asset/person.jpg')}/>
+                                <Image style={styles.itemImage} source={bet.logo}/>
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
@@ -810,8 +816,6 @@ class PopupContent extends Component {
             singleRuleView.push(<View key={index} style={{width: '100%',flexDirection: 'row',flexWrap: 'wrap'}}>{arr}</View>)
         });
 
-        console.log(this.state.tabKey)
-
         return (
             <View style={{backgroundColor: '#48B0FF', paddingBottom:this.state.hasPosition && Platform.OS == 'ios'?220:0}}>
                 <TouchableOpacity onPress={()=>{this.tabMove(0)}} activeOpacity={0.8}
@@ -830,7 +834,7 @@ class PopupContent extends Component {
                 </TouchableOpacity>
 
 
-                <Carousel ref="carousel" dots={false} selectedIndex={this.state.playType}>
+                <Carousel ref="carousel" dots={false}>
                     <View key="1">
                         <View style={{height: 50,justifyContent: 'center',alignItems: 'center'}}>
                             <Text style={{color: 'white'}}>大小单双</Text>

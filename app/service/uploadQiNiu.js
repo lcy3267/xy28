@@ -1,14 +1,16 @@
 /**
  * Created by chengyuan on 16/11/7.
  */
-import Qiniu,{Auth,ImgOps,Conf,Rs,Rpc} from 'react-native-qiniu';
+import {Auth,ImgOps,Conf,Rs,Rpc} from 'react-native-qiniu';
 
-Conf.ACCESS_KEY = 'cM-AFFTWHkIZRWbovHlrttKO_gyCS57ENlzYmLQo';
-Conf.SECRET_KEY = 'By-1TOfX9_o8HbzFRvXZDwaFMYrs9scByxHLKR33';
-const bucket = 'ycy-first';
-const host = 'http://img.youcyou.com/';
+Conf.ACCESS_KEY = 'Rd3aSJUqZt08Bf4uzWCHCCbWnvi6QQvo6IQmDQxZ';
+Conf.SECRET_KEY = 'ncrGFoReho9sSnV1gIfow_kx4iB-GWHef6GV3WSj';
+const bucket = 'xy28';
+const host = 'http://orssjk9xe.bkt.clouddn.com/';
 
-export default uploadQiNiu = (imgPath,successCallBack)=>{
+
+export default uploadQiNiu = async(imgPath,successCallBack)=>{
+
 
     let timestamp = new Date().getTime(),
         type = imgPath.split('.')[1],
@@ -21,27 +23,20 @@ export default uploadQiNiu = (imgPath,successCallBack)=>{
     );
 
     let uptoken = putPolicy.token();
-    let formInput = {
-        key : key,
-        // formInput对象如何配置请参考七牛官方文档“直传文件”一节
-    }
 
-    return Rpc.uploadFile(imgPath, uptoken, formInput)
-        .then((response) => response.text())
-        .then((responseText) => {
-            let result = JSON.parse(responseText);
-            let imgUrl = host+result.key;;
-            if(successCallBack){
-                successCallBack(imgUrl);
-            }else{
-                console.log('-----');
-                console.log(result);
-                return imgUrl;
-            }
-        })
-        .catch((err) => {
-            console.log(err);
-            return 'error';
-        });
+    const formData = new FormData();
+    formData.append('token', uptoken);
+    formData.append('file', {uri: imgPath, type: 'application/octet-stream', name: key});
+    formData.append('key', key);
+
+    return fetch('http://upload.qiniu.com',{
+        method: 'POST',
+        body: formData,
+    })
+    .then((response) => response.text() )
+    .then((responseData)=>{
+        return host+JSON.parse(responseData).key;
+    });
 }
+
 

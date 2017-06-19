@@ -24,14 +24,20 @@ class RoomList extends Component{
         this.formatRooms = this.formatRooms.bind(this);
         // 初始状态
         this.state = {
-            rooms: []
+            rooms: [],
+            rollbacks: [],
         };
     }
 
     componentWillMount() {
         const {dispatch} = this.props;
-
         dispatch({type: 'rooms/getRooms'})
+        dispatch({
+            type: 'rooms/rollbackRules',
+            callback: (rollbacks)=>{
+                this.setState({rollbacks});
+            }
+        })
     }
 
     formatRooms(rooms){
@@ -41,10 +47,24 @@ class RoomList extends Component{
         rooms = rooms.filter((room)=>room.room_type == roomType);
 
         rooms = rooms.map((room, index)=>{
-            const {level, is_speak, status} = room;
+            const {level} = room;
+            let secondText = 3;
+            let rollback = this.state.rollbacks.filter(rollback=>rollback.rule_level == level);
+            if(rollback.length > 0){
+                rollback = rollback[0];
+                let rates = [];
+                for(let key of Object.keys(rollback)){
+                    if(key.indexOf('rate') > -1){
+                        rates.push(rollback[key]);
+                    }
+                }
+                rates.sort((a,b)=>b-a);
+                secondText = rates[0]
+            }
+
             room.img = this.getRoomImg(level);
             room.title = this.getRoomLevel(level);
-            room.secondText = '最该回水18%';
+            room.secondText = `最高回水${secondText}%`;
             room.color = this.getRoomColor(level);
             return room;
         });
@@ -103,10 +123,24 @@ class RoomList extends Component{
                             <Text
                                 style={{fontSize: 18,color: room.color}}
                             >({room.secondText})</Text>
+                            <TouchableOpacity
+                                onPress={()=>{
+                                    Actions.rateExplain({
+                                    commonId: room.special_game_rule_id,
+                                    combineId: room.combine_special_rule_id,
+                                    }
+                                )}}
+                                activeOpacity={0.8}
+                                style={{marginTop: 10,marginLeft: 10,height: 22,borderWidth: 0,
+                            borderRadius: 4,borderColor: '#71DC35',width: 65,alignItems: 'center',
+                             justifyContent: 'center', backgroundColor: '#F84641',}}>
+                                <Text style={{color: 'white',fontSize: 12}}>赔率说明</Text>
+                            </TouchableOpacity>
                         </View>
                         <View style={{flex: 1, padding: 20}}>
                             <Image source={room.img} style={{width: '100%',height: '100%',borderRadius: 5}}/>
                         </View>
+
                    </TouchableOpacity>
                ))}
            </View>

@@ -10,6 +10,7 @@ import PersonSet from './routes/person/PersonSet';
 import Wallet from './routes/person/Wallet';
 import BindBank from './routes/person/BindBank';
 import SetWithdrawPwd from './routes/person/SetWithdrawPwd';
+import UserNameSet from './routes/person/UserNameSet';
 import SetLoginPwd from './routes/person/SetLoginPwd';
 import MyBankCard from './routes/person/MyBankCard';
 import Recharge from './routes/recharge/Recharge';
@@ -22,10 +23,12 @@ import IntegralChangeRecord from './routes/records/IntegralChangeRecord';
 import BetRecord from './routes/records/BetRecord';
 import WithdrawRecord from './routes/records/WithdrawRecord';
 import RollbackRecord from './routes/records/RollbackRecord';
+import RechargeRecord from './routes/records/RechargeRecord';
 import Trend from './routes/Trend';
 import { Popover, } from 'antd-mobile';
 import RoomPopover from './components/RoomPopover';
 import PlayExplain from './routes/PlayExplain';
+import RateExplain from './routes/RateExplain';
 
 const RouterComponent = () => {
   return (
@@ -43,6 +46,7 @@ const RouterComponent = () => {
           {SetScene('bindBank', '设置', BindBank)}
           {SetScene('setWithdrawPwd', '提现密码', SetWithdrawPwd)}
           {SetScene('setLoginPwd', '修改登录密码', SetLoginPwd)}
+          {SetScene('userNameSet', '修改个人资料', UserNameSet)}
           {SetScene('myBankCard', '银行卡', MyBankCard)}
           {SetScene('withdraw', '提现', Withdraw)}
           {SetScene('messageDetail', '消息详情', MessageDetail)}
@@ -50,9 +54,11 @@ const RouterComponent = () => {
           {SetScene('betRecord', '下注记录', BetRecord)}
           {SetScene('withdrawRecord', '提现记录', WithdrawRecord)}
           {SetScene('rollbackRecord', '我的回水', RollbackRecord)}
+          {SetScene('rechargeRecord', '充值记录', RechargeRecord)}
           {SetScene('trend', '走势图', Trend)}
           {SetScene('room', '房间', Room, RoomPopover,false)}
-          {SetScene('playExplain', '玩法说明', PlayExplain, null, false)}
+          {SetScene('playExplain', '玩法说明', PlayExplain)}
+          {SetScene('rateExplain', '赔率说明', RateExplain)}
        </Scene>
     </Router>
   );
