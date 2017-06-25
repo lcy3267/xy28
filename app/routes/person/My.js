@@ -90,7 +90,7 @@ class My extends Component{
 
         let path = defaultHead;
         if(info.avatar_picture_url){
-            path = {uri: cutQNImg(info.avatar_picture_url, 100)}
+            path = {uri: cutQNImg(info.avatar_picture_url, 200)}
         }
 
         return (

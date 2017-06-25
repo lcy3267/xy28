@@ -571,7 +571,7 @@ class Room extends Component{
 
         item.logo = defaultHead;
         if(item.user && item.user.avatar_picture_url){
-            item.logo = {uri: cutQNImg(item.user.avatar_picture_url, 100)}
+            item.logo = {uri: cutQNImg(item.user.avatar_picture_url, 200)}
         }
 
         if(item.type == 0){

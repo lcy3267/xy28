@@ -25,7 +25,7 @@ export default  {
 		roomBetRecords: 'GET /bet/roomBetRecords',
 		cancelBet: 'PUT /bet/cancelBet',
 		userRecords: 'PUT /bet/userRecords',
-		integralChangeRecords: 'GET /bet/integralChangeRecords',
+		integralChangeRecords: 'GET /users/integralChangeRecords',
 		userBetRecords: 'GET /bet/userBetRecords',
 		trend: 'GET /bet/trend',
 	},

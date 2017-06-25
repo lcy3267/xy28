@@ -27,7 +27,6 @@ class AlipayRecharge extends Component{
     }
 
     handleChange(value,key){
-        if(key == 'money') value = +value;
         let params = this.state.params;
         params[key] = value;
         this.setState({params});
@@ -87,7 +86,7 @@ class AlipayRecharge extends Component{
                     </View>
                 </View>
                 <View style={{paddingLeft: 10,paddingRight: 10}}>
-                    <Text style={[styles.warnInfo,{marginTop: 15}]}>*请勿存入证书金额(样例 1000.32元、500.88元)
+                    <Text style={[styles.warnInfo,{marginTop: 15}]}>*请勿存入整数金额(样例 1000.32元、500.88元)
                         以免延误财务查收</Text>
                     <Text style={styles.warnInfo}>*转账完成后请保留单据作为核对证明</Text>
                     <Text style={styles.warnInfo}>*请确认填写转账金额与时间</Text>
@@ -108,7 +107,6 @@ const {height, width, paddingTop} = Common.window;
 const styles = StyleSheet.create({
     container: {
         width: width,
-        height: height,
         backgroundColor: '#F5F5F9',
         paddingTop: paddingTop,
     },
